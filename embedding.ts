@@ -1,3 +1,3 @@
 import { addDocToSearch } from "./qdrant/embeddings";
 
-addDocToSearch();
+addDocToSearch("test_collection");
