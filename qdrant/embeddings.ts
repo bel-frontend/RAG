@@ -23,12 +23,20 @@ async function splitDocuments(docs: any[]) {
 }
 
 export async function initializeVectorStore() {
-  const embeddings = await new OllamaEmbeddings({
+  const embeddings = new OllamaEmbeddings({
     model: "phi4:latest", // Default value
     baseUrl: "http://localhost:11434", // Default value
   });
   return embeddings;
 }
+
+export const createCollection = async (
+  collectionName: string = "test_collection",
+) => {
+  const qdrant = new QdrantClient();
+  const dim = 5120; // Set the dimension of your embeddings
+  return await qdrant.createCollection(collectionName, dim);
+};
 
 export const addDocToSearch = async (
   collectionName: string = "test_collection",
@@ -38,8 +46,6 @@ export const addDocToSearch = async (
     const splitDocs = await splitDocuments(docs);
     const vectorStore = await initializeVectorStore();
     const qdrant = new QdrantClient();
-    const dim = 5120; // Set the dimension of your embeddings
-    qdrant.createCollection(collectionName, dim);
 
     const res = await qdrant.insertPoints(
       collectionName,
