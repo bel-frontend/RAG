@@ -32,9 +32,10 @@ const response = await ollama.chat({
       content:
         "Твой адказ павінен быць заснаваны толькі на прадстаўленай інфармацыі.:",
     },
-
-
-
+    ...res.map((item) => ({
+      role: "system",
+      content: item.text,
+    })),
     {
       role: "user",
       content: `Запыт карыстальніка: ${promptQuery}`,
