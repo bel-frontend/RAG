@@ -1,8 +1,5 @@
 import { addDocToSearch, searchString } from "./qdrant/embeddings";
-import { Ollama } from "ollama";
 import ollama from "ollama";
-
-// addDocToSearch();
 
 const promptQuery =
   "напішы мне прыклады якія ты ведаеш";
