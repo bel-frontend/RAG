@@ -1,5 +1,5 @@
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
-import { OllamaEmbeddings } from "@langchain/ollama";
+import { embeddingsModel } from "../ollama/embeddings.js";
 import { QdrantClient } from "./api";
 import { v4 as uuidv4 } from "uuid";
 import { loadPDFDocuments } from "../pdf_loader/pdf-loader.js";
@@ -22,29 +22,34 @@ async function splitDocuments(docs: any[]) {
   return splitDocs;
 }
 
-export async function embeddingsModel() {
-  const embeddings = new OllamaEmbeddings({
-    model: "phi4:latest", // Default value
-    baseUrl: "http://localhost:11434", // Default value
-  });
-  return embeddings;
-}
-
 export const createCollection = async (
   collectionName: string = "test_collection",
+  dim: number = 5120,
 ) => {
   const qdrant = new QdrantClient();
-  const dim = 5120; // Set the dimension of your embeddings
   return await qdrant.createCollection(collectionName, dim);
 };
 
-export const addDocToSearch = async (
-  collectionName: string = "test_collection",
-) => {
+const defaultOptions = {
+  collectionName: "test_collection",
+  embeddingsModelExternal: embeddingsModel,
+};
+
+interface optionsInterface {
+  collectionName?: string;
+  embeddingsModelExternal?: (x?: any) => Promise<any>;
+}
+
+export const addDocToSearch = async (options?: optionsInterface) => {
   try {
+    const { collectionName, embeddingsModelExternal } = {
+      ...defaultOptions,
+      ...options,
+    };
+
     const docs = await loadPDFDocuments("./pdf_documents/");
     const splitDocs = await splitDocuments(docs);
-    const vectorStore = await embeddingsModel();
+    const vectorStore = await embeddingsModelExternal();
     const qdrant = new QdrantClient();
 
     const res = await qdrant.insertPoints(
@@ -79,7 +84,7 @@ export const addDocToSearch = async (
 export const searchString = async (
   query: string,
   countResults: number = 5,
-  collectionName: string = "test_collection",
+  options?: optionsInterface,
 ): Promise<{
   text: string;
   score: number;
@@ -88,9 +93,15 @@ export const searchString = async (
   [key: string]: any;
 }> => {
   const qdrant = new QdrantClient();
-  const vectorStore = await embeddingsModel();
+
+  const { collectionName, embeddingsModelExternal } = {
+    ...defaultOptions,
+    ...options,
+  };
+  const vectorStore = await embeddingsModelExternal();
 
   const vector = await vectorStore.embedQuery(query);
+  console.log("vector size:", vector.length);
 
   const res = await qdrant.search(collectionName, vector, countResults);
   return res.result.map((item: any) => ({

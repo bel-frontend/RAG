@@ -1,23 +1,25 @@
-import { addDocToSearch, searchString } from "./qdrant/embeddings";
+import { searchString } from "./qdrant/embeddings";
+import { embeddingsModel } from "./openai/embeddings";
 import ollama from "ollama";
 
-const promptQuery =
-  "напішы мне прыклады якія ты ведаеш";
+const promptQuery = "Напішы мне прыклады якія у цябе есць";
 
-const res = await searchString(promptQuery);
+const res = await searchString(promptQuery, 5, {
+  // embeddingsModelExternal: embeddingsModel,
+});
+
 console.log(
   "Search results:",
   res.map((item) => ({
     role: "system",
     content: item.text,
+    score: item.score,
   })),
 );
 
-console.log(promptQuery);
-
 const response = await ollama.chat({
-  model: "gemma3:27b",
-    // model: "gemma3:12b",
+  // model: "gemma3:27b",
+  model: "gemma3:12b",
   messages: [
     {
       role: "system",

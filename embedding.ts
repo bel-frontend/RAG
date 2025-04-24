@@ -1,3 +1,10 @@
 import { addDocToSearch } from "./qdrant/embeddings";
+import { embeddingsModel } from "./openai/embeddings";
 
-addDocToSearch("test_collection");
+// is openai  embedding
+// addDocToSearch({
+//   embeddingsModelExternal: embeddingsModel,
+// });
+
+// is default  embedding - phi4
+addDocToSearch();
