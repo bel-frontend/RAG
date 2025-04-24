@@ -1,5 +1,5 @@
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
-import { embeddingsModel } from "../ollama/embeddings.js";
+import { embeddingsModel, PHI4_DIMM } from "../ollama/embeddings.js";
 import { QdrantClient } from "./api";
 import { v4 as uuidv4 } from "uuid";
 import { loadPDFDocuments } from "../pdf_loader/pdf-loader.js";
@@ -24,7 +24,7 @@ async function splitDocuments(docs: any[]) {
 
 export const createCollection = async (
   collectionName: string = "test_collection",
-  dim: number = 5120,
+  dim: number = PHI4_DIMM,
 ) => {
   const qdrant = new QdrantClient();
   return await qdrant.createCollection(collectionName, dim);
@@ -55,7 +55,7 @@ export const addDocToSearch = async (options?: optionsInterface) => {
     const res = await qdrant.insertPoints(
       collectionName,
       await Promise.all(
-        splitDocs.map(async (doc, index) => {
+        splitDocs.slice(250, 350).map(async (doc, index) => {
           const text = doc.pageContent;
           const metadata = doc.metadata;
           metadata.text = text; // Add the text to the metadata

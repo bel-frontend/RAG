@@ -2,10 +2,11 @@ import { searchString } from "./qdrant/embeddings";
 import { embeddingsModel } from "./openai/embeddings";
 import ollama from "ollama";
 
-const promptQuery = "Напішы мне прыклады якія у цябе есць";
+const promptQuery =
+  "знайдзі слова якое абазначае  Памыць бялізну ўсім, многім..";
 
-const res = await searchString(promptQuery, 5, {
-  // embeddingsModelExternal: embeddingsModel,
+const res = await searchString(promptQuery, 10, {
+  embeddingsModelExternal: embeddingsModel,
 });
 
 console.log(
@@ -24,7 +25,7 @@ const response = await ollama.chat({
     {
       role: "system",
       content:
-        "Ты - эксперт у галіне штучнага інтэлекту ды промпт-дызайну. Адказвай на пытанні па-беларуску, Улічвай прадстаўленыя дадзеныя як аснову адказу. Адказвай поўнымі адказамі і на ўсе пытанні",
+        "Ты дапаможнік у пошуку па тлумачальнаму слоўніку. Адказвай на пытанні па-беларуску, Улічвай прадстаўленыя дадзеныя як аснову адказу. Адказвай поўнымі адказамі і на ўсе пытанні",
     },
     {
       role: "system",

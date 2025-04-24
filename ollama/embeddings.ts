@@ -7,3 +7,5 @@ export async function embeddingsModel(model = "phi4:latest") {
   });
   return embeddings;
 }
+
+export const PHI4_DIMM = 5120;
