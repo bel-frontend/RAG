@@ -2,8 +2,7 @@ import { searchString } from "./qdrant/embeddings";
 import { embeddingsModel } from "./openai/embeddings";
 import ollama from "ollama";
 
-const promptQuery =
-  "знайдзі слова якое абазначае  Памыць бялізну ўсім, многім..";
+const promptQuery = "Што вядома пра one-shot";
 
 const res = await searchString(promptQuery, 10, {
   embeddingsModelExternal: embeddingsModel,

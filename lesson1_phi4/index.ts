@@ -2,8 +2,7 @@ import { searchString } from "./qdrant/embeddings";
 import { embeddingsModel } from "./ollama/embeddings";
 import ollama from "ollama";
 
-const promptQuery =
-  "што ты ведаеш  пра Zero-shot ды граундынг. Дай прыклады для кожнай тэхнікі. Якія  яшчэ тэхнікі ты ведаеш? і дзе пра  гэта пачытаць?";
+const promptQuery = "Што вядома пра one-shot";
 
 const res = await searchString(promptQuery, 10, {
   embeddingsModelExternal: embeddingsModel,
