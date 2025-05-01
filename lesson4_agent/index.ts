@@ -1,8 +1,7 @@
 import TelegramBot from "node-telegram-bot-api";
-import * as dotenv from "dotenv";
 import { agentApp } from "./agent";
 
-dotenv.config();
+
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 if (!token) throw new Error("Missing TELEGRAM_BOT_TOKEN");
@@ -20,11 +19,13 @@ bot.onText(/\/start/, (msg) => {
 
 bot.on("message", async (msg) => {
   const userId = msg.chat.id;
+  bot.sendMessage(userId, "Чакаю адказу..." + userId, );
   const text = msg.text;
   if (!text || text.startsWith("/")) return;
 
   try {
     const history = sessions.get(userId) || [];
+    bot.sendChatAction(userId,"typing");
     const res = await agentApp.invoke({
       messages: [...history, { role: "user", content: text }],
     });
@@ -32,7 +33,7 @@ bot.on("message", async (msg) => {
     const updated = res.messages;
     const reply = updated[updated.length - 1]?.content || "Няма адказу.";
     sessions.set(userId, updated);
-    bot.sendMessage(userId, reply);
+    bot.sendMessage(userId, reply.toString());
   } catch (err: any) {
     console.error("Error:", err);
     bot.sendMessage(userId, "Памылка: " + err.message);

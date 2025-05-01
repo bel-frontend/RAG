@@ -3,7 +3,7 @@ import { DynamicTool } from "langchain/tools";
 import { chatModel } from "./ollama";
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
-import {  } from "@langchain/langgraph";
+// import {  } from "@langchain/langgraph";
 import { SystemMessage } from "@langchain/core/messages";
 
 
@@ -22,7 +22,10 @@ const fetchText = async (url: string) => {
 // 📦 Інструмент 1: надвор'е
 const weatherTool = tool(
   async ({ city }: { city: string }) => {
-    return await fetchText(`https://wttr.in/${city}?format=3`);
+    const  res = await fetchText(`https://wttr.in/${city}?format=3`);
+    console.log(res);
+    
+    return res || "Cannot find weather.";
   },
   {
     name: "get_weather",
@@ -34,9 +37,8 @@ const weatherTool = tool(
 // 📦 Інструмент 2: курс валют
 const exchangeTool = tool(
   async ({ from, to }: { from: string; to: string }) => {
-    const url = `https://api.exchangerate.host/latest?base=${from}&symbols=${to}`;
-    const data = await fetchJson(url) as { rates: Record<string, number> };
-    const rate = data.rates?.[to];
+   ;
+    const rate = 3.8 // = data.rates?.[to];
     return rate ? `1 ${from} = ${rate} ${to}` : "Cannot find rate.";
   },
   {
@@ -65,10 +67,10 @@ const newsTool = tool(
 );
 
 
-  const model = await chatModel("phi4:latest");
+  const model = await chatModel("llama3.2");
 
   export const agentApp = createReactAgent({
     llm:model,
-    tools: [weatherTool, exchangeTool, newsTool],
+    tools: [weatherTool, exchangeTool],
     messageModifier: new SystemMessage("Ты разумны памочнік. Адказвай зразумела і каротка."),
   });

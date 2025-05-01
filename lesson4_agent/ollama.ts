@@ -7,3 +7,9 @@ export async function chatModel(model = "phi4:latest") {
   });
   return chatModel;
 }
+
+
+
+
+ 
+
