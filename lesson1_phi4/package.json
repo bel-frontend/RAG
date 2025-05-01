@@ -16,7 +16,6 @@
     "@langchain/ollama": "^0.2.0",
     "@langchain/openai": "^0.5.6",
     "dotenv": "^16.4.7",
-    "langchain": "^0.1.36",
     "ollama": "^0.5.14",
     "pdf-parse": "^1.1.1",
     "prettier": "^3.5.3",
