@@ -1,34 +1,27 @@
-import { ChatOllama } from "@langchain/ollama";
-import { ChatOpenAI } from "@langchain/openai";
+import { ChatOllama } from '@langchain/ollama';
+import { ChatOpenAI } from '@langchain/openai';
 
 export enum Model {
-  LLM3 = "llama3.2",
-  GPT4o = "gpt-4o",
-  MISTRAL="mistral-small3.1"
+    LLM3 = 'llama3.2',
+    GPT4o = 'gpt-4o',
+    MISTRAL = 'mistral-small3.1',
 }
 
-
 export async function chatModel(model = Model.LLM3) {
-  let chatModel = null;
-  switch (model) {
-    case Model.GPT4o:
-      chatModel = new ChatOpenAI({
-        model: Model.GPT4o,
-        temperature: 0.7,
-        openAIApiKey: process.env.OPENAI_API_KEY, 
-      });
-      break;
-    default:
-      chatModel = new ChatOllama({
-        model: model,
-        baseUrl: "http://localhost:11434", 
-      });
+    let chatModel = null;
+    switch (model) {
+        case Model.GPT4o:
+            chatModel = new ChatOpenAI({
+                model: Model.GPT4o,
+                temperature: 0.7,
+                openAIApiKey: process.env.OPENAI_API_KEY,
+            });
+            break;
+        default:
+            chatModel = new ChatOllama({
+                model: model,
+                baseUrl: 'http://localhost:11434',
+            });
     }
     return chatModel;
 }
-
-
-
-
-
-
