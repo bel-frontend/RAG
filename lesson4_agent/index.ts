@@ -19,7 +19,7 @@ bot.onText(/\/start/, (msg) => {
 
 bot.on("message", async (msg) => {
   const userId = msg.chat.id;
-  bot.sendMessage(userId, "Чакаю адказу..." + userId, );
+  bot.sendMessage(userId, "Чакаю адказу..." );
   const text = msg.text;
   if (!text || text.startsWith("/")) return;
 

@@ -21,9 +21,6 @@ const fetchText = async (url: string) => {
 const weatherTool = tool(
   async ({ city }: { city: string }) => {
     const  res = await fetchText(`https://wttr.in/${city}?format=3`);
-    console.log(res);
-    console.log(z.object({ city: z.string() }));
-    
     return res || "Cannot find weather.";
   },
   {
@@ -37,7 +34,8 @@ const getAnyProverb = tool( async () => {
   const res = await fetchJson("https://gist.githubusercontent.com/bel-frontend/41775a79904f2535c4dd97d7990ad83d/raw/dc6c5cb1a849961833dd157454fd3ec11129883b/index.json") as string[];
   const randomIndex = Math.floor(Math.random() * res.length);
   const randomProverb = res[randomIndex];
-
+  console.log(randomProverb);
+  
   return randomProverb || "Cannot find proverb.";
 }, {
   name: "get_any_proverb",
@@ -50,5 +48,6 @@ const getAnyProverb = tool( async () => {
   export const agentApp = createReactAgent({
     llm:model,
     tools: [weatherTool,getAnyProverb],
-    messageModifier: new SystemMessage("Ты разумны памочнік. Адказвай зразумела і каротка."),
+    messageModifier: new SystemMessage(`Ты разумны памочнік. Адказвай зразумела і каротка. Адказвай на пытанні толькі
+      адносна надвор'я,  і генерацыі прыказак. Калі пытанне не адносіцца да гэтых тэм, скажы "Я не ведаю".`),
   });
