@@ -4,11 +4,11 @@ import { ChatOpenAI } from "@langchain/openai";
 export enum Model {
   LLM3 = "llama3.2",
   GPT4o = "gpt-4o",
-  PHI4 = "phi4:latest",
+  MISTRAL="mistral-small3.1"
 }
 
 
-export async function chatModel(model = Model.PHI4) {
+export async function chatModel(model = Model.LLM3) {
   let chatModel = null;
   switch (model) {
     case Model.GPT4o:

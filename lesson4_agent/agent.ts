@@ -43,11 +43,11 @@ const getAnyProverb = tool( async () => {
 });
 
 
-  const model = await chatModel(Model.GPT4o);
+  const model = await chatModel(Model.MISTRAL);
 
   export const agentApp = createReactAgent({
     llm:model,
     tools: [weatherTool,getAnyProverb],
     messageModifier: new SystemMessage(`Ты разумны памочнік. Адказвай зразумела і каротка. Адказвай на пытанні толькі
-      адносна надвор'я,  і генерацыі прыказак. Калі пытанне не адносіцца да гэтых тэм, скажы "Я не ведаю".`),
+      адносна надвор'я,  і генерацыі прыказак.  Калі пытанне не адносіцца да гэтых тэм, скажы "Я не ведаю".`),
   });
