@@ -5,11 +5,14 @@ export enum Model {
     LLM3 = 'llama3.2',
     GPT4o = 'gpt-4o',
     MISTRAL = 'mistral-small3.1',
+    GEMMA3_27B = 'gemma3:27b',
+    GEMMA3_13B = 'gemma3:13b',
+    PHI4 = 'phi4:latest',
     LLAMA3_3 = 'llama3.3:latest',
 }
 
 export async function chatModel(model = Model.LLM3) {
-    let chatModel = null;
+    let chatModel: ChatOpenAI | ChatOllama | null = null;
     switch (model) {
         case Model.GPT4o:
             chatModel = new ChatOpenAI({
