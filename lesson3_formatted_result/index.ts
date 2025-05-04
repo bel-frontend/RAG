@@ -17,7 +17,15 @@ bot.onText(/\/start/, (msg) => {
     sessions.set(msg.chat.id, []);
 });
 
-const model = await chatModel(Model.GEMMA3_12B);
+import { z } from 'zod';
+
+const schema = z.object({
+    is_scam: z.boolean().describe('Result of  checkein  text is scam or not'),
+    description: z.string().describe('Description, why it is scam'),
+});
+
+const model = await chatModel(Model.GPT4o);
+const structuredModel  = model.withStructuredOutput(schema);
 
 bot.on('message', async (msg) => {
     const userId = msg.chat.id;
@@ -28,15 +36,18 @@ bot.on('message', async (msg) => {
     try {
         const history = sessions.get(userId) || [];
         bot.sendChatAction(userId, 'typing');
-        const input = [...history, { role: 'user', content: text }];
-        const res = await model.invoke(input);
+        const input = [...history,{
+            role: 'system',
+            content: `Ты AI-адміністратар каналу пра тэхналогіі. Тваё заданне - вызначаць, ці з'яўляецца тэкст скамам ці спамам. Калі так, дай падрабязнае тлумачэнне, чаму ён скам ці спам. Калі не, дай падрабязнае тлумачэнне, чаму ён не скам.`,
+        }, { role: 'user', content: text }];
+        const res = await structuredModel.invoke(input);
 
         const updated = res;
         console.log('Updated:', updated);
 
 
-        sessions.set(userId, updated.content);
-        bot.sendMessage(userId, updated.content.toString());
+        // sessions.set(userId, updated.);
+        bot.sendMessage(userId, `${updated.is_scam ? 'Скам' : 'Не скам'}\n\n${updated.description}, ${JSON.stringify(updated)}`);
     } catch (err: any) {
         console.error('Error:', err);
         bot.sendMessage(userId, 'Памылка: ' + err.message);
