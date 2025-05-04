@@ -13,9 +13,11 @@ bot.onText(/\/start/, (msg) => {
         msg.chat.id,
         'Прывітанне! Я AI-агент. Спытайся пра надвор’е, курс валют або навіны.'
     );
+    // clear  history
+    sessions.set(msg.chat.id, []);
 });
 
-const model = await chatModel(Model.GPT4o);
+const model = await chatModel(Model.GEMMA3_12B);
 
 bot.on('message', async (msg) => {
     const userId = msg.chat.id;
@@ -32,8 +34,6 @@ bot.on('message', async (msg) => {
         const updated = res;
         console.log('Updated:', updated);
 
-        // console.log('Updated:', updated);
-        // const reply = updated[updated.length - 1]?.content || 'Няма адказу.';
 
         sessions.set(userId, updated.content);
         bot.sendMessage(userId, updated.content.toString());

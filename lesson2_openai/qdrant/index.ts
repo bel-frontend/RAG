@@ -1,5 +1,4 @@
 import { addDocToSearch, searchString } from './embeddings';
-import { Ollama } from 'ollama';
 import ollama from 'ollama';
 
 const promptQuery =
