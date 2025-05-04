@@ -13,14 +13,13 @@ bot.onText(/\/start/, (msg) => {
         msg.chat.id,
         'Прывітанне! Я AI-агент. Спытайся пра надвор’е, курс валют або навіны.'
     );
-    // clear  history
     sessions.set(msg.chat.id, []);
 });
 
 import { z } from 'zod';
 
 const schema = z.object({
-    is_scam: z.boolean().describe('Result of  checkein  text is scam or not'),
+    is_scam: z.boolean().describe('Result of checking text is scam (spam) or not'),
     description: z.string().describe('Description, why it is scam'),
 });
 
