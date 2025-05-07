@@ -1,0 +1,25 @@
+{
+    "name": "lesson4_agent",
+    "module": "index.ts",
+    "type": "module",
+    "private": true,
+    "devDependencies": {
+        "@types/bun": "latest",
+        "@types/node-telegram-bot-api": "^0.64.8"
+    },
+    "peerDependencies": {
+        "typescript": "^5"
+    },
+    "dependencies": {
+        "@langchain/community": "^0.3.42",
+        "@langchain/core": "^0.3.50",
+        "@langchain/langgraph": "^0.2.67",
+        "@langchain/ollama": "^0.2.0",
+        "@langchain/openai": "^0.5.10",
+        "dotenv": "^16.5.0",
+        "langchain": "^0.3.24",
+        "node-telegram-bot-api": "^0.66.0",
+        "ollama": "^0.5.15",
+        "zod": "^3.24.3"
+    }
+}
