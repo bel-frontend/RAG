@@ -50,6 +50,9 @@ bot.on('photo', async (msg) => {
         console.log('Analysis Result:', res.message.content);
     } catch (err: any) {
         console.error('Error:', err);
-        bot.sendMessage(userId, 'Error processing the image: ' + err.message);
+        bot.sendMessage(
+            userId,
+            'Error processing the image: ' + err.message + JSON.stringify(err)
+        );
     }
 });

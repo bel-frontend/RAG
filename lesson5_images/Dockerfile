@@ -11,6 +11,6 @@ COPY . .
 
 ENV NODE_ENV=production
 
-EXPOSE 3000
+EXPOSE 3000 11434
 
 CMD ["bun", "index.ts"]
