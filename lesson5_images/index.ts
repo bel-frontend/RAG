@@ -18,7 +18,7 @@ bot.onText(/\/start/, (msg) => {
 bot.on('photo', async (msg) => {
     const userId = msg.chat.id;
     bot.sendMessage(userId, 'Processing your image...');
-
+    let interval: NodeJS.Timeout;
     try {
         // Get the file ID of the largest photo
         const fileId = msg.photo[msg.photo.length - 1].file_id;
@@ -36,7 +36,10 @@ bot.on('photo', async (msg) => {
         const base64Image = buffer.toString('base64');
 
         // Send the Base64 image to the model for analysis
-        bot.sendChatAction(userId, 'typing');
+        interval =  setInterval(()=>{
+
+           bot.sendChatAction(userId, 'typing');
+       },5000) 
         const prompt = `You are an AI image analyzer. Analyze the content of the image and provide a detailed description. 
         If we have some text on image return  this text and  summary of the text.`;
         const res = await getDataFromImage({
@@ -44,11 +47,13 @@ bot.on('photo', async (msg) => {
             prompt,
             model: Model.GEMMA3_12B,
         });
-
+        clearInterval(interval);
         // Send the result back to the user
         bot.sendMessage(userId, `Analysis Result:\n\n${res.message.content}`);
         console.log('Analysis Result:', res.message.content);
     } catch (err: any) {
+        // @ts-ignore
+        clearInterval(interval);
         console.error('Error:', err);
         bot.sendMessage(
             userId,
