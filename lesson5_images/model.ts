@@ -22,7 +22,8 @@ export async function chatModel(model = Model.GEMMA3_12B) {
         default:
             chatModel = new ChatOllama({
                 model: model,
-                baseUrl: 'http://localhost:11434',
+                baseUrl:
+                    process.env.OLLAMA_BASE_URL || 'http://localhost:11434',
             });
     }
     return chatModel;
