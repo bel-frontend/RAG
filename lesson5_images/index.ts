@@ -37,7 +37,8 @@ bot.on('photo', async (msg) => {
 
         // Send the Base64 image to the model for analysis
         bot.sendChatAction(userId, 'typing');
-        const prompt = `You are an AI image analyzer. Analyze the content of the image and provide a detailed description.`;
+        const prompt = `You are an AI image analyzer. Analyze the content of the image and provide a detailed description. 
+        If we have some text on image return  this text and  summary of the text.`;
         const res = await getDataFromImage({
             image: base64Image,
             prompt,
@@ -46,6 +47,7 @@ bot.on('photo', async (msg) => {
 
         // Send the result back to the user
         bot.sendMessage(userId, `Analysis Result:\n\n${res.message.content}`);
+        console.log('Analysis Result:', res.message.content);
     } catch (err: any) {
         console.error('Error:', err);
         bot.sendMessage(userId, 'Error processing the image: ' + err.message);
