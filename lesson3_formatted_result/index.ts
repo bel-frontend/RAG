@@ -23,7 +23,7 @@ const schema = z.object({
     description: z.string().describe('Description, why it is scam'),
 });
 
-const model = await chatModel(Model.GPT4o);
+const model = await chatModel(Model.MISTRAL);
 const structuredModel  = model.withStructuredOutput(schema);
 
 bot.on('message', async (msg) => {
