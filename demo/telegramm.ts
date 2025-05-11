@@ -1,5 +1,4 @@
 import TelegramBot from 'node-telegram-bot-api';
-import dotenv from 'dotenv';
 
 import { searchString } from './qdrant/embeddings';
 import { embeddingsModel } from './openai/embeddings';
@@ -7,18 +6,12 @@ import { chatModel, Model } from './model';
 import { COLLECTION_NAME } from './qdrant/collection';
 import { PromptSDK } from 'goman-live';
 
-// Load environment variables
-dotenv.config();
+const applicationId = 'appIDec34bf94bf92bf5d';
+const promptId = '6820b9d11e8d396dbdd76f30';
+const apikey =
+    'apkdf59b4097d660c2a8e38c9d2947085fb4a66f1234275eeeb0ac572c18bf00427';
 
-const applicationId = process.env.APPLICATION_ID!;
-const promptId = process.env.PROMPT_ID!;
-const apikey = process.env.API_KEY!;
-const baseurl = process.env.BASE_URL!;
-
-if (!applicationId || !promptId || !apikey || !baseurl) {
-    throw new Error('Missing required environment variables');
-}
-
+const baseurl = 'https://api.goman.live';
 const sdk = new PromptSDK({
     applicationId,
     apiKey: apikey,
