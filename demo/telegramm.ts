@@ -6,46 +6,51 @@ import { chatModel, Model } from './model';
 import { COLLECTION_NAME } from './qdrant/collection';
 import { PromptSDK } from 'goman-live';
 
-const applicationId = 'appIDec34bf94bf92bf5d';
-const promptId = '6820b9d11e8d396dbdd76f30';
-const apikey =
-    'apkdf59b4097d660c2a8e38c9d2947085fb4a66f1234275eeeb0ac572c18bf00427';
 
-const baseurl = 'https://api.goman.live';
+const applicationId = process.env.APPLICATION_ID!;
+const promptId = process.env.PROMPT_ID!;
+const apikey = process.env.API_KEY!;
+const baseurl = process.env.BASE_URL!;
+
+if (!applicationId || !promptId || !apikey || !baseurl) {
+    throw new Error('Missing required environment variables');
+}
+
 const sdk = new PromptSDK({
     applicationId,
     apiKey: apikey,
     baseUrl: baseurl,
 });
 
-const token = process.env.TELEGRAM_BOT_TOKEN;
-if (!token) throw new Error('Missing TELEGRAM_BOT_TOKEN');
+let RAG_IS_ON = true; // 🧠 for controlling RAG mode
+const sessions = new Map<number, any>(); // 🧠 for storing user history
 
-const bot = new TelegramBot(token, { polling: true });
-
-const sessions = new Map<number, any>(); // 🧠 для history
-
-let RAG_IS_ON = true; // 🧠 для history
-
-bot.onText(/\/start/, (msg) => {
-    bot.sendMessage(
-        msg.chat.id,
-        'Прывітанне! Я AI-агент. Спытайся пра надвор’е, курс валют або навіны.'
-    );
-    sessions.set(msg.chat.id, []);
-});
-bot.onText(/\/RAG/, (msg) => {
+/**
+ * Toggles the RAG mode.
+ */
+export const toggleRAG = () => {
     RAG_IS_ON = !RAG_IS_ON;
-    // clear history
-    sessions.set(msg.chat.id, []);
-    bot.sendMessage(msg.chat.id, `RAG is ${RAG_IS_ON ? 'ON' : 'OFF'}.`);
-});
+    return RAG_IS_ON;
+};
 
-bot.on('message', async (msg) => {
+/**
+ * Clears the session history for a specific user.
+ * @param userId - The ID of the user.
+ */
+export const clearSessionHistory = (userId: number) => {
+    sessions.set(userId, []);
+};
+
+/**
+ * Handles a user message and generates a response.
+ * @param userId - The ID of the user.
+ * @param text - The user's input text.
+ * @returns The assistant's response.
+ */
+export const handleUserMessage = async (userId: number, text: string): Promise<string> => {
+    if (!text || text.startsWith('/')) return '';
+
     const systemPrompt = await sdk.getPromptFromRemote(promptId);
-    const userId = msg.chat.id;
-    const text = msg.text;
-    if (!text || text.startsWith('/')) return;
 
     const resSearch = (
         await searchString(text, 10, {
@@ -67,7 +72,6 @@ bot.on('message', async (msg) => {
 
     try {
         const history = sessions.get(userId) || [];
-        bot.sendChatAction(userId, 'typing');
         const input = [
             ...history,
             {
@@ -90,9 +94,41 @@ bot.on('message', async (msg) => {
             { role: 'assistant', content: res.content },
         ]);
 
-        bot.sendMessage(userId, res.content || '');
+        return res.content || '';
     } catch (err: any) {
         console.error('Error:', err);
+        throw new Error('Error generating response: ' + err.message);
+    }
+};
+
+const token = process.env.TELEGRAM_BOT_TOKEN;
+if (!token) throw new Error('Missing TELEGRAM_BOT_TOKEN');
+
+const bot = new TelegramBot(token, { polling: true });
+
+bot.onText(/\/start/, (msg) => {
+    bot.sendMessage(
+        msg.chat.id,
+        'Прывітанне! Я AI-агент. Спытайся пра надвор’е, курс валют або навіны.'
+    );
+    clearSessionHistory(msg.chat.id);
+});
+bot.onText(/\/RAG/, (msg) => {
+    const isRAGOn = toggleRAG();
+    clearSessionHistory(msg.chat.id);
+    bot.sendMessage(msg.chat.id, `RAG is ${isRAGOn ? 'ON' : 'OFF'}.`);
+});
+
+bot.on('message', async (msg) => {
+    const userId = msg.chat.id;
+    const text = msg.text;
+    if (!text || text.startsWith('/')) return;
+
+    bot.sendChatAction(userId, 'typing');
+    try {
+        const response = await handleUserMessage(userId, text);
+        bot.sendMessage(userId, response);
+    } catch (err: any) {
         bot.sendMessage(userId, 'Памылка: ' + err.message);
     }
 });

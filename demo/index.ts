@@ -25,34 +25,35 @@ const sdk = new PromptSDK({
     baseUrl: baseurl,
 });
 
-const token = process.env.TELEGRAM_BOT_TOKEN;
-if (!token) throw new Error('Missing TELEGRAM_BOT_TOKEN');
+let RAG_IS_ON = true; // 🧠 for controlling RAG mode
+const sessions = new Map<number, any>(); // 🧠 for storing user history
 
-const bot = new TelegramBot(token, { polling: true });
-
-const sessions = new Map<number, any>(); // 🧠 для history
-
-let RAG_IS_ON = true; // 🧠 для history
-
-bot.onText(/\/start/, (msg) => {
-    bot.sendMessage(
-        msg.chat.id,
-        'Прывітанне! Я AI-агент. Спытайся пра надвор’е, курс валют або навіны.'
-    );
-    sessions.set(msg.chat.id, []);
-});
-bot.onText(/\/RAG/, (msg) => {
+/**
+ * Toggles the RAG mode.
+ */
+export const toggleRAG = () => {
     RAG_IS_ON = !RAG_IS_ON;
-    // clear history
-    sessions.set(msg.chat.id, []);
-    bot.sendMessage(msg.chat.id, `RAG is ${RAG_IS_ON ? 'ON' : 'OFF'}.`);
-});
+    return RAG_IS_ON;
+};
 
-bot.on('message', async (msg) => {
+/**
+ * Clears the session history for a specific user.
+ * @param userId - The ID of the user.
+ */
+export const clearSessionHistory = (userId: number) => {
+    sessions.set(userId, []);
+};
+
+/**
+ * Handles a user message and generates a response.
+ * @param userId - The ID of the user.
+ * @param text - The user's input text.
+ * @returns The assistant's response.
+ */
+export const handleUserMessage = async (userId: number, text: string): Promise<string> => {
+    if (!text || text.startsWith('/')) return '';
+
     const systemPrompt = await sdk.getPromptFromRemote(promptId);
-    const userId = msg.chat.id;
-    const text = msg.text;
-    if (!text || text.startsWith('/')) return;
 
     const resSearch = (
         await searchString(text, 10, {
@@ -68,13 +69,11 @@ bot.on('message', async (msg) => {
         }))
         .filter((item: any) => item.score > 0.5);
 
-    console.log('resSearch', resSearch);
 
     const model = (await chatModel(Model.GPT4o)) as any;
 
     try {
         const history = sessions.get(userId) || [];
-        bot.sendChatAction(userId, 'typing');
         const input = [
             ...history,
             {
@@ -97,9 +96,9 @@ bot.on('message', async (msg) => {
             { role: 'assistant', content: res.content },
         ]);
 
-        bot.sendMessage(userId, res.content || '');
+        return res.content || '';
     } catch (err: any) {
         console.error('Error:', err);
-        bot.sendMessage(userId, 'Памылка: ' + err.message);
+        throw new Error('Error generating response: ' + err.message);
     }
-});
+};
