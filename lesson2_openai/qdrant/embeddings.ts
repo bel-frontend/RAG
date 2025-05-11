@@ -40,6 +40,8 @@ interface optionsInterface {
   embeddingsModelExternal?: (x?: any) => Promise<any>;
 }
 
+const BATCH_SIZE = 100; // Define the batch size
+
 export const addDocToSearch = async (options?: optionsInterface) => {
   try {
     const { collectionName, embeddingsModelExternal } = {
@@ -52,10 +54,10 @@ export const addDocToSearch = async (options?: optionsInterface) => {
     const vectorStore = await embeddingsModelExternal();
     const qdrant = new QdrantClient();
 
-    const res = await qdrant.insertPoints(
-      collectionName,
-      await Promise.all(
-        splitDocs.map(async (doc, index) => {
+    // Helper function to process batches
+    const processBatch = async (batch: any[], batchIndex: number) => {
+      const points = await Promise.all(
+        batch.map(async (doc, index) => {
           const text = doc.pageContent;
           const metadata = doc.metadata;
           metadata.text = text; // Add the text to the metadata
@@ -64,7 +66,9 @@ export const addDocToSearch = async (options?: optionsInterface) => {
 
           // Log progress
           console.clear();
-          console.log(`Embedding document ${index + 1} of ${splitDocs.length}`);
+          console.log(
+            `Embedding document ${batchIndex * BATCH_SIZE + index + 1} of ${splitDocs.length}`,
+          );
 
           return {
             id: generated_id,
@@ -72,10 +76,20 @@ export const addDocToSearch = async (options?: optionsInterface) => {
             payload: metadata,
           };
         }),
-      ),
-    );
+      );
 
-    console.log("Inserted points:", res);
+      // Insert the batch into Qdrant
+      const res = await qdrant.insertPoints(collectionName, points);
+      console.log(`Inserted batch ${batchIndex + 1}:`, res);
+    };
+
+    // Split documents into batches and process each batch
+    for (let i = 0; i < splitDocs.length; i += BATCH_SIZE) {
+      const batch = splitDocs.slice(i, i + BATCH_SIZE);
+      await processBatch(batch, i / BATCH_SIZE);
+    }
+
+    console.log("All points inserted successfully.");
   } catch (error) {
     console.error("Error in addDocToSearch:", error);
   }

@@ -1,0 +1,30 @@
+{
+  "name": "vectordb",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint . --ext .ts,.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@langchain/community": "^0.3.35",
+    "@langchain/core": "^0.3.43",
+    "@langchain/ollama": "^0.2.0",
+    "@langchain/openai": "^0.5.6",
+    "dotenv": "^16.4.7",
+    "langchain": "^0.1.36",
+    "ollama": "^0.5.14",
+    "pdf-parse": "^1.1.1",
+    "prettier": "^3.5.3",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.29.1",
+    "@typescript-eslint/parser": "^8.29.1",
+    "eslint": "^9.24.0"
+  }
+}

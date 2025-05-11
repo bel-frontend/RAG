@@ -1,5 +1,5 @@
-import { addDocToSearch } from "./qdrant/embeddings";
-import { embeddingsModel } from "./openai/embeddings";
+import { addDocToSearch , createCollection} from "./qdrant/embeddings";
+import { embeddingsModel,  } from "./openai/embeddings";
 
 // is openai  embedding
 addDocToSearch({
