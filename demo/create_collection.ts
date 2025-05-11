@@ -1,4 +1,5 @@
-import { createCollection } from "./qdrant/embeddings";
-import { OPENAI_DIM } from "./openai/embeddings";
+import { createCollection } from './qdrant/embeddings';
+import { OPENAI_DIM } from './openai/embeddings';
+import { COLLECTION_NAME } from './qdrant/collection';
 
-createCollection("openai_collection", OPENAI_DIM);
+createCollection(COLLECTION_NAME, OPENAI_DIM);

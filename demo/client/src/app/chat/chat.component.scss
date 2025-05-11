@@ -1,0 +1,89 @@
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 30px;
+    height: 90vh;
+
+    h1, h2 {
+        font-family: "MongoDB Value Serif", sans-serif;
+        font-style: normal;
+        font-weight: 400;
+        font-size: 64px;
+        line-height: 80px;
+        color: #001e2b;
+        text-align: center;
+        
+        .assistant-question {
+            color: grey;
+        }
+    }
+
+    .chat {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        background-color: #FDFBFF;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        height: 100%;
+        width: 100%;
+        border-radius: 10px;
+    }
+
+    form {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        .question-field {
+            width: 700px;
+        }
+
+        .rag-toggle {
+            margin-top: -22px;
+            margin-left: 20px;
+        }
+    }
+
+    .conversation-container {
+        display: flex;
+        align-items: start;
+        justify-content: center;
+        padding: 16px 20px 0 20px;
+        margin-bottom: 50px;
+        overflow: scroll;
+        height: 100%;
+
+        .conversation {
+            width: 1000px;
+        }
+    }
+
+    .message {
+        padding: 10px;
+        border-bottom: 1px solid #e0e0e0;
+        display: flex;
+        align-items: flex-start;
+        gap: 20px;
+        line-height: 30px;
+
+        .avatar {
+            border-radius: 50%;
+            margin-right: 10px;
+            margin-top: 15px;
+        }
+
+        .content {
+            display: flex;
+            flex-direction: column;
+
+            .name {
+                font-weight: bold;
+            }
+
+            .text {
+                margin-top: 5px;
+            }
+        }
+    }
+}

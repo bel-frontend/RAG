@@ -9,7 +9,7 @@ export enum Model {
 }
 
 export async function chatModel(model = Model.LLM3) {
-    let chatModel = null;
+    let chatModel: any = null;
     switch (model) {
         case Model.GPT4o:
             chatModel = new ChatOpenAI({
