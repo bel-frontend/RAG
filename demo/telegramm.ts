@@ -55,12 +55,14 @@ export const handleUserMessage = async (userId: number, text: string): Promise<s
         throw new Error('Failed to fetch system prompt');
     }
 
-   const  searchResult = (
-        await searchString(text, 10, {
-            embeddingsModelExternal: embeddingsModel,
-            collectionName: COLLECTION_NAME,
-        })
-    );
+   const searchResult = await searchString(
+       text,
+       systemPrompt?.metadata?.ragResultCount || 10,
+       {
+           embeddingsModelExternal: embeddingsModel,
+           collectionName: COLLECTION_NAME,
+       }
+   );
     const resSearch = searchResult
         .map((item: any) => ({
             text: item.text.replace(/\n/g, ' ').replace(/ {2,}/g, ' '),
@@ -68,7 +70,7 @@ export const handleUserMessage = async (userId: number, text: string): Promise<s
             source: item.source,
             loc: item.loc,
         }))
-        .filter((item: any) => item.score > 0.45);
+        .filter((item: any) => item.score > (systemPrompt?.metadata?.minScope || 0.45));
 
     // console.log('resSearch', resSearch);
 
@@ -86,7 +88,7 @@ export const handleUserMessage = async (userId: number, text: string): Promise<s
             ...(RAG_IS_ON
                 ? resSearch.map((item: any) => ({
                       role: 'system',
-                      content: item.text + `\n\nSource: ${item.source}`,
+                      content: item.text + `\n\nSource: ${item.source}, Location: ${item.loc}`,
                   }))
                 : [{
                         role: 'system',
