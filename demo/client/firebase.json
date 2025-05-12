@@ -1,9 +1,0 @@
-{
-  "hosting": [
-    {
-      "target": "chatbot",
-      "source": ".",
-      "frameworksBackend": {}
-    }
-  ]
-}
