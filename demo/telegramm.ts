@@ -51,22 +51,26 @@ export const handleUserMessage = async (userId: number, text: string): Promise<s
     if (!text || text.startsWith('/')) return '';
 
     const systemPrompt = await sdk.getPromptFromRemote(promptId);
+    if (!systemPrompt) {
+        throw new Error('Failed to fetch system prompt');
+    }
 
-    const resSearch = (
+   const  searchResult = (
         await searchString(text, 10, {
             embeddingsModelExternal: embeddingsModel,
             collectionName: COLLECTION_NAME,
         })
-    )
+    );
+    const resSearch = searchResult
         .map((item: any) => ({
             text: item.text.replace(/\n/g, ' ').replace(/ {2,}/g, ' '),
             score: item.score,
             source: item.source,
-            id: item.id,
+            loc: item.loc,
         }))
-        .filter((item: any) => item.score > 0.5);
+        .filter((item: any) => item.score > 0.45);
 
-    console.log('resSearch', resSearch);
+    // console.log('resSearch', resSearch);
 
     const model = (await chatModel(Model.GPT4o)) as any;
 
@@ -81,10 +85,13 @@ export const handleUserMessage = async (userId: number, text: string): Promise<s
 
             ...(RAG_IS_ON
                 ? resSearch.map((item: any) => ({
-                      role: 'user',
+                      role: 'system',
                       content: item.text + `\n\nSource: ${item.source}`,
                   }))
-                : []),
+                : [{
+                        role: 'system',
+                        content: 'Context is empty. No RAG.',
+                }]),
             { role: 'user', content: text },
         ];
         const res = await model.invoke(input);
