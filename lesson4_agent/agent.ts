@@ -36,7 +36,7 @@ const getAnyProverb = tool(
         )) as string[];
         const randomIndex = Math.floor(Math.random() * res.length);
         const randomProverb = res[randomIndex];
-        console.log(randomProverb);
+        console.log(JSON.stringify(randomProverb));
 
         return randomProverb || 'Cannot find proverb.';
     },
@@ -46,12 +46,36 @@ const getAnyProverb = tool(
     }
 );
 
+const  getProverbByTopic = tool(
+    async () => {
+        console.log('Fetching proverbs');
+        
+        const res = (await fetchJson(
+            'https://gist.githubusercontent.com/bel-frontend/41775a79904f2535c4dd97d7990ad83d/raw/dc6c5cb1a849961833dd157454fd3ec11129883b/index.json'
+        )) as {message:string}[];
+
+                console.log(res);
+
+        const  allProverbsInOneString = res.reduce((acc, curr) => {
+            return acc + curr.message + '\n';
+        }, '');
+        
+        return allProverbsInOneString || 'Cannot find proverbs.';},
+    {
+        name: 'get_proverb_by_topic',
+        description: 'Get full list of proverbs   for search or selecting by topic',
+    }
+);
+
+
+
 const model = await chatModel(Model.GPT4o);
 
 export const agentApp = createReactAgent({
     llm: model,
-    tools: [weatherTool, getAnyProverb],
+    tools: [weatherTool, getProverbByTopic, getAnyProverb],
     messageModifier:
         new SystemMessage(`Ты разумны памочнік. Адказвай зразумела і каротка. Адказвай на пытанні толькі
       адносна надвор'я,  і генерацыі прыказак.  Калі пытанне не адносіцца да гэтых тэм, скажы "Я не ведаю".`),
 });
+
