@@ -24,7 +24,8 @@ bot.on('message', async (msg) => {
     try {
         const history = sessions.get(userId) || [];
         bot.sendChatAction(userId, 'typing');
-        const res = await agentApp.invoke({
+
+        const res = await agentApp({bot, userId}).invoke({
             messages: [...history, { role: 'user', content: text }],
         });
 
