@@ -48,11 +48,11 @@ const getProverbByTopic = tool(
     {
         name: 'get_proverb_by_topic',
         description:
-            'Get full list of proverbs   for search or selecting by topic',
+            'Get full list of proverbs for search or selecting by topic or random',
     }
 );
 
-const model = await chatModel(Model.GPT4o);
+const model = await chatModel(Model.MISTRAL);
 
 export const agentApp = ({ bot, userId }: { bot: any; userId: number }) => {
     const getDogPhoto = tool(
