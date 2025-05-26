@@ -14,7 +14,6 @@ try {
             GatewayIntentBits.DirectMessages,
         ],
     });
-`e`
     client.once('ready', () => {
         if (client.user) {
             console.log(`Logged in as ${client.user.tag}`);
@@ -27,8 +26,7 @@ try {
         console.log('Message received:', message.content);
         const userId = message.author.id;
         // 1. Check if it's a direct message (DM)
-        const isDirect =
-            message.channel.type === ChannelType.DM;
+        const isDirect = message.channel.type === ChannelType.DM;
 
         // 2. Check if the bot is mentioned in a guild message
         const isMention = message.mentions.has(client.user?.id || '');
@@ -48,18 +46,37 @@ try {
         console.log('User ID:', userId);
 
         const text = message.content;
+        let imageUrl: string[] = [];
+        const imageAttachments = message.attachments.filter((att) =>
+            att.contentType?.startsWith('image/')
+        );
+
+        if (imageAttachments.size > 0) {
+            imageAttachments.forEach((att) => {
+                console.log('Image URL:', att.url);
+                imageUrl.push(att.url);
+            });
+        }
 
         const res = await agentApp({ bot: message }).invoke({
-            messages: [...history, { role: 'user', content: text }],
+            messages: [
+                ...history,
+                {
+                    role: 'user',
+                    content:
+                        text +
+                        (imageUrl.length > 0
+                            ? `(imageUrl:${imageUrl.join(',')})`
+                            : ''),
+                },
+            ],
         });
-        console.log('Response:', res?.messages);
 
         const updated = res.messages;
         const reply = updated[updated.length - 1]?.content || 'Няма адказу.';
         message.channel.send(reply.toString());
 
         sessions.set(userId, updated);
-
 
         if (message.author.bot) return;
     });

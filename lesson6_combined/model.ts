@@ -6,10 +6,11 @@ export enum Model {
     GPT4o = 'gpt-4o',
     MISTRAL = 'mistral-small3.1',
     LLAMA3_3 = 'llama3.3:latest',
+    GEMMA3_12 = 'gemma3:12b',
 }
 
 export async function chatModel(model = Model.LLM3) {
-    let chatModel = null;
+    let chatModel:any = null;
     switch (model) {
         case Model.GPT4o:
             chatModel = new ChatOpenAI({
