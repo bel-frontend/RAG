@@ -101,7 +101,8 @@ const getReceptFromRefregeratorImage = tool(
     },
     {
         name: 'get_recept_from_refregerator_image',
-        description: 'Get detailed recipe(s) from refrigerators goods on images',
+        description:
+            'Get detailed recipe(s) from refrigerators goods on images',
         schema: z.object({ imageUrl: z.array(z.string()) }), // выкарыстоўваецца для валідацыі
     }
 );
