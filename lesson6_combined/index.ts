@@ -37,7 +37,7 @@ try {
             console.log('User mentioned the bot in a server');
         } else {
             console.log('Message is not a DM or mention');
-            // return; // Optionally ignore
+            return; // Optionally ignore
         }
 
         const history = sessions.get(userId) || [];
