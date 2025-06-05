@@ -4,34 +4,51 @@ import { RunnableSequence } from '@langchain/core/runnables';
 import { chatModel, Model } from './model';
 
 const model = await chatModel(Model.GPT4o);
-
-// 1. Ініцыялізуем LLM
-
-
-// 2. Прампт для перакладу
+// 1. Prompt: Пераклад і праверка тэматыкі
 const translationPrompt = PromptTemplate.fromTemplate(
-    `You are a professional copywriter-translator. Check the users content to ensure it pertains to news about technologies, AI, devices,phones, computers, laptops, gadgets, large companies (MANG, Tesla, Samsung, etc), science, discoveries, computer games, movies, etc. If the news is not about these topics, return the response JSON: {{"title":"error", "content": null}}. Otherwise, make summary-brief (no more 150 words) and translate result to Belarussian language. Return  text only on Belarussian language.\n\n{input}`
-);
-
-// 3. Прампт для праверкі правапісу і лексікі
-const correctionPrompt = PromptTemplate.fromTemplate(
+    `You are a professional copywriter-translator. Check the users content to ensure it pertains to news about technologies, AI, devices, phones, computers, laptops, gadgets, large companies (MANG, Tesla, Samsung, etc), science, discoveries, computer games, movies, etc. If the news is not about these topics, return the response JSON: {{"title":"error", "content": null}}. Otherwise, make summary-brief (no more 150 words) and translate result to Belarussian language. Return text only on Belarussian language.\n\n{input}`
+  );
+  
+  // 2. Prompt: Выпраўленне
+  const correctionPrompt = PromptTemplate.fromTemplate(
     'Правер тэкст ніжэй на памылкі (правапіс, лексіка) і выпраў іх. Вярні толькі выпраўлены тэкст:\n\n{translatedText}'
-);
-
-// 4. Цэпачкі (RunnableSequence)
-const translateChain = translationPrompt.pipe(model);
-const correctChain = correctionPrompt.pipe(model);
-
-// 5. Аб’яднаная цэпачка
-const chain = RunnableSequence.from([
+  );
+  
+  // 3. Ланцужкі
+  const translateChain = translationPrompt.pipe(model);
+  const correctChain = correctionPrompt.pipe(model);
+  
+  // 4. Аб’яднаная цэпачка з вяртаннем усіх этапаў
+  const chain = RunnableSequence.from([
     async (input: { input: string }) => ({ input: input.input }),
-    translateChain,
-    async (translatedText: string) => ({ translatedText }), // перадаем у наступны крок
-    correctChain,
-    // Ensure the final output is an object with a 'content' property
-    async (output: any) => ({ content: typeof output === 'string' ? output : output?.content ?? output }),
-]);
-
+  
+    // ⬇️ Пераклад і рэзюмэ
+    async (values: { input: string }) => {
+      const translated = await translateChain.invoke(values);
+      return {
+        input: values.input,
+        translatedText: translated,
+      };
+    },
+  
+    // ⬇️ Выпраўленне
+    async (values: { input: string; translatedText: string }) => {
+      const corrected = await correctChain.invoke({
+        translatedText: values.translatedText,
+      });
+  
+      return {
+        originalText: values.input,
+        translatedText: values.translatedText,
+        correctedText:
+          typeof corrected === 'string'
+            ? corrected
+            // @ts-ignore
+            : corrected?.content ?? corrected,
+      };
+    },
+  ]);
+  
 // 6. Выклік
 const result = await chain.invoke({
     input: `Apple will have to continue allowing web links and external payment options in the App Store after its request to halt a judge’s order was rejected today by a higher court.
@@ -52,4 +69,8 @@ In the weeks since, major apps like Spotify and Kindle have taken advantage of t
 });
 
 console.log('✅ Выпраўлены пераклад:');
-console.log(result?.content);
+
+// 6. Вывад усіх этапаў
+console.log("📝 Арыгінальны тэкст:\n", result.originalText);
+console.log("\n🌐 Пераклад і рэзюмэ:\n", result.translatedText);
+console.log("\n✅ Выпраўлены пераклад:\n", result.correctedText);
