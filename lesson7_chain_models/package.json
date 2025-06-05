@@ -1,0 +1,29 @@
+{
+  "name": "lesson6_combined",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@langchain/community": "^0.3.42",
+    "@langchain/core": "^0.3.50",
+    "@langchain/langgraph": "^0.2.67",
+    "@langchain/ollama": "^0.2.0",
+    "@langchain/openai": "^0.5.10",
+    "discord.js": "^14.19.3",
+    "dotenv": "^16.5.0",
+    "langchain": "^0.3.24",
+    "ollama": "^0.5.15",
+    "zod": "^3.24.3"
+  }
+}
