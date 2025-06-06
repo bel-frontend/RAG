@@ -52,7 +52,7 @@ const getProverbByTopic = tool(
     }
 );
 
-const model = await chatModel(Model.MISTRAL);
+const model = await chatModel(Model.GPT4o);
 
 export const agentApp = ({ bot, userId }: { bot: any; userId: number }) => {
     const getDogPhoto = tool(
