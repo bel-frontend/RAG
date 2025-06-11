@@ -15,67 +15,83 @@ const model = await chatModel(Model.GPT4_1);
 const translationPromptData = await promptSdk.getLangChainPrompt(prompt_id);
 const correctionPromptData = await promptSdk.getLangChainPrompt(mistakeFixPrompt);
 
-// --- Utility ---
+// Utility to check if prompt has a placeholder
 const hasInputPlaceholder = (str: string, key: string) =>
     str.includes(`{${key}}`);
 
-// --- Chain Definition ---
-const chain = RunnableSequence.from([
-    // Step 1: Input normalization
-    async (input: { input: string }) => {
-        console.log('🔹 Step 1: Input:', input.input);
-        return { input: input.input };
-    },
+/**
+ * Runs translation and correction chain.
+ * @param model - The chat model instance.
+ * @param inputText - The text to translate and correct.
+ * @param translationPromptData - Object with .value for translation prompt.
+ * @param correctionPromptData - Object with .value for correction prompt.
+ * @returns The result object with originalText, translatedText, correctedText.
+ */
+export async function runTranslationCorrectionChain(
+    model: any,
+    inputText: string,
+    translationPromptData: { value: string },
+    correctionPromptData: { value: string }
+) {
+    const chain = RunnableSequence.from([
+        // Step 1: Input normalization
+        async (input: { input: string }) => {
+            console.log('🔹 Step 1: Input:', input.input);
+            return { input: input.input };
+        },
 
-    // Step 2: Translation and summary
-    async (values: { input: string }) => {
-        const promptText = translationPromptData.value;
-        let translated: string;
+        // Step 2: Translation and summary
+        async (values: { input: string }) => {
+            const promptText = translationPromptData.value;
+            let translated: string;
 
-        if (hasInputPlaceholder(promptText, 'input')) {
-            const prompt = PromptTemplate.fromTemplate(promptText);
-            translated = await prompt.pipe(model).invoke({ input: values.input }) as string;
-        } else {
-            translated = await model.invoke(`${promptText}\n\n${values.input}`);
-        }
+            if (hasInputPlaceholder(promptText, 'input')) {
+                const prompt = PromptTemplate.fromTemplate(promptText);
+                translated = await prompt.pipe(model).invoke({ input: values.input }) as string;
+            } else {
+                translated = await model.invoke(`${promptText}\n\n${values.input}`);
+            }
 
-        translated = typeof translated === 'string'
-            ? translated
-            // @ts-ignore
-            : translated?.content ?? translated;
+            translated = typeof translated === 'string'
+                ? translated
+                // @ts-ignore
+                : translated?.content ?? translated;
 
-        console.log('🔹 Step 2: Translated:', translated);
-        return {
-            input: values.input,
-            translatedText: translated,
-        };
-    },
+            console.log('🔹 Step 2: Translated:', translated);
+            return {
+                input: values.input,
+                translatedText: translated,
+            };
+        },
 
-    // Step 3: Correction
-    async (values: { input: string; translatedText: string }) => {
-        const promptText = correctionPromptData.value;
-        let corrected: string;
+        // Step 3: Correction
+        async (values: { input: string; translatedText: string }) => {
+            const promptText = correctionPromptData.value;
+            let corrected: string;
 
-        if (hasInputPlaceholder(promptText, 'translatedText')) {
-            const prompt = PromptTemplate.fromTemplate(promptText);
-            corrected = await prompt.pipe(model).invoke({ translatedText: values.translatedText }) as string;
-        } else {
-            corrected = await model.invoke(`${promptText}\n\n${values.translatedText}`);
-        }
+            if (hasInputPlaceholder(promptText, 'translatedText')) {
+                const prompt = PromptTemplate.fromTemplate(promptText);
+                corrected = await prompt.pipe(model).invoke({ translatedText: values.translatedText }) as string;
+            } else {
+                corrected = await model.invoke(`${promptText}\n\n${values.translatedText}`);
+            }
 
-        corrected = typeof corrected === 'string'
-            ? corrected
-            // @ts-ignore
-            : corrected?.content ?? corrected;
+            corrected = typeof corrected === 'string'
+                ? corrected
+                // @ts-ignore
+                : corrected?.content ?? corrected;
 
-        console.log('🔹 Step 3: Corrected:', corrected);
-        return {
-            originalText: values.input,
-            translatedText: values.translatedText,
-            correctedText: corrected,
-        };
-    },
-]);
+            console.log('🔹 Step 3: Corrected:', corrected);
+            return {
+                originalText: values.input,
+                translatedText: values.translatedText,
+                correctedText: corrected,
+            };
+        },
+    ]);
+
+    return await chain.invoke({ input: inputText });
+}
 
 // --- Example Input ---
 const inputText = `
@@ -122,7 +138,7 @@ I’ve been using the first Tahoe developer beta for about a day. There will be 
 `;
 
 // --- Chain Invocation ---
-const result = await chain.invoke({ input: inputText });
+const result = await runTranslationCorrectionChain(model, inputText, translationPromptData, correctionPromptData);
 
 // --- Output ---
 console.log('\n📝 Арыгінальны тэкст:\n', result.originalText);
