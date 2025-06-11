@@ -2,7 +2,7 @@ import { PromptTemplate } from '@langchain/core/prompts';
 import { RunnableSequence } from '@langchain/core/runnables';
 import { chatModel, Model } from './model';
 import { PromptSDK } from 'goman-live';
-
+import { z } from 'zod';
 // --- SDK and Model Initialization ---
 const promptSdk = new PromptSDK({
     applicationId: 'appID87b9abb0d07b',
@@ -14,6 +14,18 @@ const mistakeFixPrompt = '684688a3b81fba04309d936b';
 const model = await chatModel(Model.GPT4_1);
 const translationPromptData = await promptSdk.getLangChainPrompt(prompt_id);
 const correctionPromptData = await promptSdk.getLangChainPrompt(mistakeFixPrompt);
+
+const schema = z.object({
+    title: z.string().describe('Title of the news article'),
+    belarussian_content: z
+        .string()
+        .describe('Belarussian translation of the news article'),
+    english_content: z.string().describe('English version of the news article'),
+    belarussian_title: z
+        .string()
+        .describe('Belarussian translation of the title'),
+});
+const structuredModel = model.withStructuredOutput(schema);
 
 // Utility to check if prompt has a placeholder
 const hasInputPlaceholder = (str: string, key: string) =>
@@ -138,7 +150,12 @@ I’ve been using the first Tahoe developer beta for about a day. There will be 
 `;
 
 // --- Chain Invocation ---
-const result = await runTranslationCorrectionChain(model, inputText, translationPromptData, correctionPromptData);
+const result = await runTranslationCorrectionChain(
+    structuredModel,
+    inputText,
+    translationPromptData,
+    correctionPromptData
+);
 
 // --- Output ---
 console.log('\n📝 Арыгінальны тэкст:\n', result.originalText);
