@@ -19,14 +19,32 @@ const fetchText = async (url: string) => {
 
 // 📦 Інструмент 1: надвор'е
 const weatherTool = tool(
-    async ({ city }: { city: string }) => {
-        const res = await fetchText(`https://wttr.in/${city}?format=3`);
-        return res || 'Cannot find weather.';
+    async ({ city, latitude, longitude }: { city: string; latitude: number; longitude: number }) => {
+        // Validate that city contains only Latin (ABC) letters, spaces, or hyphens
+        if (typeof latitude !== 'number' || typeof longitude !== 'number') {
+            return "Latitude і longitude павінны быць лікамі.";
+        }
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`;
+        try {
+            const data = await fetchJson(url);
+            if (!data.current_weather) {
+                return "Не атрымалася атрымаць надвор'е.";
+            }
+            const weather = data.current_weather;
+            return `У горадзе ${city} цяпер ${weather.temperature}°C, вецер ${weather.windspeed} км/г, код надвор'я: ${weather.weathercode}.`;
+        } catch (e) {
+            return "Памылка пры атрыманні надвор'я.";
+        }
     },
     {
         name: 'get_weather',
-        description: 'Get current weather for a given city',
-        schema: z.object({ city: z.string() }), // выкарыстоўваецца для валідацыі
+        description:
+            'Get current weather for a given city by its name (in ABC/Latin alphabet), latitude and longitude. Example: Minsk, 53.9, 27.5667.',
+        schema: z.object({
+            city: z.string(),
+            latitude: z.number(),
+            longitude: z.number(),
+        }),
     }
 );
 
@@ -140,6 +158,6 @@ export const agentApp = ({ bot }: { bot: any }) => {
         ],
         messageModifier:
             new SystemMessage(`Ты разумны памочнік. Адказвай зразумела і каротка. Адказвай на пытанні толькі
-      адносна надвор'я, генерацыі прыказак , запыт фотаграйі сабак, запыт рэцэптаў ці што паснедаць ці прыгатаваць.   Калі пытанне не адносіцца да гэтых тэм, скажы "Я не ведаю". Адказвай па-беларуску`),
+      адносна надвор'я, генерацыі прыказак , запыт фотаграйі сабак, запыт рэцэптаў ці што паснедаць ці прыгатаваць.   Калі пытанне не адносіцца да гэтыя тэм, скажы "Я не ведаю". Адказвай па-беларуску`),
     });
 };
