@@ -23,6 +23,9 @@ try {
     });
 
     client.on('messageCreate', async (message) => {
+        // Only process messages from room (channel) 1374368491771002970
+        if (message.channel.id !== '1374368491771002970') return;
+
         console.log('Message received:', message.content);
         const userId = message.author.id;
         // 1. Check if it's a direct message (DM)
@@ -37,7 +40,7 @@ try {
             console.log('User mentioned the bot in a server');
         } else {
             console.log('Message is not a DM or mention');
-            return; // Optionally ignore
+            // return; // Optionally ignore
         }
 
         const history = sessions.get(userId) || [];
