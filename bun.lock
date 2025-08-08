@@ -29,6 +29,7 @@
         "node-fetch": "^2.7.0",
         "node-telegram-bot-api": "^0.66.0",
         "npm": "^10.9.2",
+        "ollama": "^0.5.15",
         "p-finally": "^1.0.0",
         "p-queue": "^6.6.2",
         "p-retry": "^4.6.2",

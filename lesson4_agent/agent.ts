@@ -52,7 +52,7 @@ const getProverbByTopic = tool(
     }
 );
 
-const model = await chatModel(Model.GPT5    );
+const model = await chatModel(Model.GPT5);
 
 export const agentApp = ({ bot, userId }: { bot: any; userId: number }) => {
     const getDogPhoto = tool(

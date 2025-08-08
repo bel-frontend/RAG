@@ -1,4 +1,4 @@
-import { Ollama } from '@langchain/ollama';
+import {Ollama} from 'ollama'
 import { Model } from '../common/model'
 
 // @ts-ignore
@@ -16,7 +16,6 @@ export const  getDataFromImage = async ({
 const res = await ollama.chat({
 	model: Model.GEMMA3_12B,
     url: process.env.OLLAMA_BASE_URL || 'http://localhost:11434',
-    
 	messages: [{
 		role: 'user',
 		content: prompt,

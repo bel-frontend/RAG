@@ -44,7 +44,8 @@
         "@langchain/ollama": "^0.2.0",
         "@langchain/openai": "^0.5.10",
         "langchain": "^0.3.24",
-        "node-telegram-bot-api": "^0.66.0"
+        "node-telegram-bot-api": "^0.66.0",
+        "ollama": "^0.5.15"
     },
     "devDependencies": {},
     "scripts": {
