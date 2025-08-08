@@ -1,5 +1,5 @@
 import { createReactAgent } from '@langchain/langgraph/prebuilt';
-import { chatModel, Model } from './model';
+import { chatModel, Model } from '../common/model';
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 import { SystemMessage } from '@langchain/core/messages';

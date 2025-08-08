@@ -1,5 +1,5 @@
-import {Ollama} from 'ollama'
-import { Model } from './model'
+import { Ollama } from '@langchain/ollama';
+import { Model } from '../common/model'
 
 // @ts-ignore
 const ollama = new Ollama({

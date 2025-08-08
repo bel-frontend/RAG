@@ -1,5 +1,5 @@
 import TelegramBot from 'node-telegram-bot-api';
-import { chatModel, Model } from './model';
+import { chatModel, Model } from '../common/model';
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 if (!token) throw new Error('Missing TELEGRAM_BOT_TOKEN');

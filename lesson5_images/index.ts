@@ -1,5 +1,5 @@
 import TelegramBot from 'node-telegram-bot-api';
-import {  Model } from './model';
+import {  Model } from '../common/model';
 import fetch from 'node-fetch';
 import { getDataFromImage } from './ollama';
 

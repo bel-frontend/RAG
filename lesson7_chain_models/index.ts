@@ -1,7 +1,8 @@
 import { ChatOpenAI } from '@langchain/openai';
-import { PromptTemplate } from '@langchain/core/prompts';
-import { RunnableSequence } from '@langchain/core/runnables';
-import { chatModel, Model } from './model';
+import { StringOutputParser } from '@langchain/core/output_parsers';
+import { ChatPromptTemplate, PromptTemplate } from '@langchain/core/prompts';
+import { RunnablePassthrough, RunnableSequence } from '@langchain/core/runnables';
+import { chatModel, Model } from '../common/model';
 
 const model = await chatModel(Model.GPT4o);
 // 1. Prompt: Пераклад і праверка тэматыкі

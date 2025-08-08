@@ -1,5 +1,5 @@
 import { createReactAgent } from '@langchain/langgraph/prebuilt';
-import { chatModel, Model } from './model';
+import { chatModel, Model } from '../common/model';
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 import { SystemMessage } from '@langchain/core/messages';
@@ -48,11 +48,11 @@ const getProverbByTopic = tool(
     {
         name: 'get_proverb_by_topic',
         description:
-            'Get full list of proverbs for search or selecting by topic or random',
+            'Get full list of proverbs (прыказкі і прымаўкі) for search or selecting by topic or random on Belarussian  language',
     }
 );
 
-const model = await chatModel(Model.GPT4o);
+const model = await chatModel(Model.GPT5    );
 
 export const agentApp = ({ bot, userId }: { bot: any; userId: number }) => {
     const getDogPhoto = tool(
