@@ -1,7 +1,5 @@
-import { ChatOpenAI } from '@langchain/openai';
-import { StringOutputParser } from '@langchain/core/output_parsers';
-import { ChatPromptTemplate, PromptTemplate } from '@langchain/core/prompts';
-import { RunnablePassthrough, RunnableSequence } from '@langchain/core/runnables';
+import { PromptTemplate } from '@langchain/core/prompts';
+import { RunnableSequence } from '@langchain/core/runnables';
 import { chatModel, Model } from '../common/model';
 
 const model = await chatModel(Model.GPT4o);
@@ -45,7 +43,7 @@ const chain = RunnableSequence.from([
                 typeof corrected === 'string'
                     ? corrected
                     : // @ts-ignore
-                      (corrected?.content ?? corrected),
+                      corrected?.content ?? corrected,
         };
     },
 ]);
