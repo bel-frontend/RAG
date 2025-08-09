@@ -19,10 +19,18 @@ const fetchText = async (url: string) => {
 
 // 📦 Інструмент 1: надвор'е
 const weatherTool = tool(
-    async ({ city, latitude, longitude }: { city: string; latitude: number; longitude: number }) => {
+    async ({
+        city,
+        latitude,
+        longitude,
+    }: {
+        city: string;
+        latitude: number;
+        longitude: number;
+    }) => {
         // Validate that city contains only Latin (ABC) letters, spaces, or hyphens
         if (typeof latitude !== 'number' || typeof longitude !== 'number') {
-            return "Latitude і longitude павінны быць лікамі.";
+            return 'Latitude і longitude павінны быць лікамі.';
         }
         const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`;
         try {
@@ -125,7 +133,7 @@ const getReceptFromRefregeratorImage = tool(
     }
 );
 
-const model = await chatModel(Model.GPT4o);
+const model = await chatModel(Model.GPT5_MINI);
 
 export const agentApp = ({ bot }: { bot: any }) => {
     const getDogPhoto = tool(
