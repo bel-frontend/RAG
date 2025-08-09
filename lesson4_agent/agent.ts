@@ -52,7 +52,7 @@ const getProverbByTopic = tool(
     }
 );
 
-const model = await chatModel(Model.GPT5);
+const model = await chatModel(Model.GPT4o);
 
 export const agentApp = ({ bot, userId }: { bot: any; userId: number }) => {
     const getDogPhoto = tool(
@@ -72,11 +72,13 @@ export const agentApp = ({ bot, userId }: { bot: any; userId: number }) => {
         }
     );
 
-    return createReactAgent({
+    const res = createReactAgent({
         llm: model,
         tools: [weatherTool, getProverbByTopic, getDogPhoto],
         messageModifier:
             new SystemMessage(`Ты разумны памочнік. Адказвай зразумела і каротка. Адказвай на пытанні толькі
       адносна надвор'я, генерацыі прыказак і фоты сабакі. Калі пытанне не адносіцца да гэтых тэм, скажы "Я не ведаю".`),
     });
+
+    return res;
 };
