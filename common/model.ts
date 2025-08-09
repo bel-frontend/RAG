@@ -5,6 +5,7 @@ export enum Model {
     LLM3 = 'llama3.2',
     GPT4o = 'gpt-4o',
     GPT5 = 'gpt-5',
+    GPT5_MINI = 'gpt-5-mini',
     GPT4_1 = 'gpt-4.1-2025-04-14',
     O3_MINI = 'o3-mini',
 
@@ -37,7 +38,14 @@ export async function chatModel(
                 openAIApiKey: process.env.OPENAI_API_KEY,
                 //@ts-ignore
                 // useResponsesApi: true,
-                reasoning: { effort: 'low' },
+                // reasoning: { effort: 'minimal' },
+            });
+            break;
+        case Model.GPT5_MINI:
+            chatModelInstance = new ChatOpenAI({
+                model: Model.GPT5_MINI,
+                temperature: 1,
+                openAIApiKey: process.env.OPENAI_API_KEY,
             });
             break;
         case Model.GPT4_1:
