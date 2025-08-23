@@ -226,8 +226,8 @@ process.on('unhandledRejection', (reason, promise) => {
     });
 });
 
-httpServer.listen(8081, () => {
-    console.log('MCP Streamable HTTP Server on http://localhost:8081/mcp');
+httpServer.listen(3002, () => {
+    console.log('MCP Streamable HTTP Server on http://localhost:3002/mcp');
     console.log('Available endpoints:');
     console.log('  - GET  /healthz  - Health check');
     console.log('  - POST /mcp      - MCP endpoint');

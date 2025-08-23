@@ -13,6 +13,6 @@ COPY . .
 ENV NODE_ENV=production
 ENV API_BASE_URL_DEV=https://your.api
 
-EXPOSE 8081
+EXPOSE 3002
 
 CMD ["bun", "index.ts"]
