@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+    mcp_server:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: mcp_server
+        ports:
+            - '8081:8081'
+        restart: unless-stopped
+        environment:
+            - NODE_ENV=production
+            - API_BASE_URL_DEV=API_BASE_URL_DEV=https://your.api
+        # networks:
+        #     - goman_net
+# networks:
+#     goman_net:
+#         external: true
