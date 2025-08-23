@@ -1,12 +1,12 @@
 {
-  "servers": {
-    "goman-mcp": {
-      "type": "http",
-  "url": "http://localhost:3002/mcp",
-      "headers": {
-        "apiKey": "3a787e11a1788afd96582c669b93c03e4ce250c95a4ef81f",
-        "applicationid": "appID265fdc96bb4ef29b"
-      }
+    "servers": {
+        "test-mcp": {
+            "type": "http",
+            "url": "http://localhost:3002/mcp",
+            "headers": {
+                "apiKey": "API_KEY_1234567890",
+                "applicationid": "APPLICATION_ID"
+            }
+        }
     }
-  }
 }
