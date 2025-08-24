@@ -8,7 +8,7 @@ import { registerProverbTools } from './tools/proverbs';
 import { registerWeatherTools } from './tools/weather';
 
 // 1) MCP-сервер
-const mcp = new McpServer({ name: 'goman-mcp', version: '0.1.0' });
+const mcp = new McpServer({ name: 'test-mcp', version: '0.1.0' });
 
 // 2) Рэгістрацыя тулаў (модульна)
 registerEchoTools(mcp);

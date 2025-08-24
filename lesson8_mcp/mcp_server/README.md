@@ -180,3 +180,89 @@ export function registerMyTools(mcp: McpServer) {
 - абгортваць у Docker для зручнай пастаўкі.
 
 Крынічныя файлы для старту: `index.ts`, `context.ts`, `tools/*`, `.vscode/mcp.json`.
+
+## Налады MCP для Cursor і VS Code, і як запускаць
+
+Ніжэй — гатовыя прыклады канфігурацый і крокі запуску ў двух папулярных асяроддзях.
+
+### Cursor (.cursor/mcp.json)
+
+1) Стварыце файл `.cursor/mcp.json` у каранёвай дырэкторыі вашага праекта (або ў вашым $HOME, калі хочаце агульнасістэмна).
+
+Прыклад:
+
+```jsonc
+{
+  "mcpServers": {
+    "goman-mcp": {
+      "type": "http",
+      "url": "http://localhost:3002/mcp",
+      "headers": {
+        "apiKey": "API_KEY_1234567890",
+        "applicationid": "APPLICATION_ID"
+      }
+    }
+  }
+}
+```
+
+2) Запусціце сервер:
+
+```sh
+bun install
+bun index.ts
+```
+
+3) Адкрыйце Cursor → Settings → MCP Servers і пераканайцеся, што `goman-mcp` падцягнуўся з канфігурацыі і пазначаны як "connected". Калі не бачыце — зрабіце Reload Window у Cursor.
+
+4) Праверце працу ў чат-акне Cursor: папрасіце мадэль выкарыстаць тул, напрыклад: «Выкліч тул get_weather для горада Minsk» або «Выкарыстай get_proverb_by_topic з тэмай “пра працу”». Cursor сам пабудуе выклік MCP-тула па схеме.
+
+Парада: загалоўкі ў канфігурацыі ключоў (`apiKey`, `applicationid`) неадчувальныя да рэгістра пад капотам (Node апускае назвы да ніжняга рэгістра), таму можна пакінуць як у прыкладзе.
+
+### VS Code (.vscode/mcp.json)
+
+VS Code сам па сабе не ўключае убудаваны MCP-кліент, таму выкарыстоўвайце адзін з лёгкіх пашырэнняў-кліентаў. Усталюйце адно з наступных (любое падыдзе):
+
+```vscode-extensions
+jasonkneen.mcpsx-run,nickeolofsson.remember-mcp-vscode
+```
+
+1) Пакладзіце канфіг у `.vscode/mcp.json` (у гэтым рэпо ўжо ёсць прыклад):
+
+```jsonc
+{
+  "servers": {
+    "goman-mcp": {
+      "type": "http",
+      "url": "http://localhost:3002/mcp",
+      "headers": {
+        "apiKey": "API_KEY_1234567890",
+        "applicationid": "APPLICATION_ID"
+      }
+    }
+  }
+}
+```
+
+2) Запусціце MCP-сервер:
+
+```sh
+bun install
+bun index.ts
+```
+
+3) У VS Code: Command Palette → перайдзіце ў секцыю пашырэння (у залежнасці ад выбранага пашырэння гэта можа быць "MCP Servers" або "MCP"), праверце, што `goman-mcp` падключаны.
+
+4) Калі карыстаецеся GitHub Copilot Chat, пашырэнне MCP-кліента дадасць вашы тулы ў пералік даступных. У чат-акне папрасіце: «Выкарыстай тул get_weather з city=Minsk» або «get_proverb_by_topic з random=true, limit=3» — Copilot зойдзецца на MCP-вызоў.
+
+5) Для хуткай праверкі сервера з-за межаў кліента: 
+
+```sh
+curl -s http://localhost:3002/healthz | jq .
+```
+
+### Заўвагі
+
+- Статлес: сервер працуе без сесій, таму няма неабходнасці ў `Mcp-Session-Id` — кожны запыт незалежны.
+- Загалоўкі: у канфігурацыі выкарыстоўвайце `apiKey` і `applicationid`. На баку сервера яны будуць апрацаваныя і даступныя ў `requestContext` для тулаў.
+- CORS: уключаны для `*`, таму кліент у браўзеры таксама зможа звязацца.
