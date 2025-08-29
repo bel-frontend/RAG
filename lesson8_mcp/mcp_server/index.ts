@@ -1,8 +1,11 @@
 import { createServer } from 'node:http';
+// Declare Node's process in a way that doesn't require @types/node
+// (works in both Node and Bun runtimes)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const process: any = (globalThis as any).process;
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 
-import { requestContext } from './context';
 import { registerEchoTools } from './tools/echo';
 import { registerProverbTools } from './tools/proverbs';
 import { registerWeatherTools } from './tools/weather';
@@ -28,17 +31,13 @@ const httpServer = createServer(async (req, res) => {
     try {
         const host = req.headers.host ?? 'localhost';
         const url = new URL(req.url ?? '/', `http://${host}`);
-        const apikey = req.headers.apikey;
-        const applicationid = req.headers.applicationid;
 
         // CORS / preflight
         if (req.method === 'OPTIONS') {
             res.writeHead(204, {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'GET,POST,DELETE,OPTIONS',
-                'Access-Control-Allow-Headers':
-                    'Content-Type,Authorization,apikey,applicationid,mcp-session-id',
-                'Access-Control-Expose-Headers': 'Mcp-Session-Id',
+                'Access-Control-Allow-Headers': 'Content-Type,Authorization',
             });
             res.end();
             return;
@@ -63,7 +62,6 @@ const httpServer = createServer(async (req, res) => {
         if (url.pathname === '/mcp') {
             // Ensure CORS for MCP route responses
             res.setHeader('Access-Control-Allow-Origin', '*');
-            res.setHeader('Access-Control-Expose-Headers', 'Mcp-Session-Id');
 
             // У статлес рэжыме не патрабуем Mcp-Session-Id header
             // Кожны запыт цалкам незалежны
@@ -80,91 +78,17 @@ const httpServer = createServer(async (req, res) => {
 
                 try {
                     const parsed = JSON.parse(raw);
-                    const apiKey = Array.isArray(apikey)
-                        ? apikey[0]
-                        : (apikey as string | undefined);
-                    const appId = Array.isArray(applicationid)
-                        ? applicationid[0]
-                        : (applicationid as string | undefined);
-
-                    // Run within request context
-                    await new Promise<void>((resolve, reject) => {
-                        requestContext.run(
-                            { apikey: apiKey, applicationid: appId },
-                            async () => {
-                                try {
-                                    await transport.handleRequest(
-                                        req as any,
-                                        res,
-                                        parsed as any,
-                                    );
-                                    resolve();
-                                } catch (e) {
-                                    console.error(
-                                        'Transport handleRequest error:',
-                                        e,
-                                    );
-                                    reject(e);
-                                }
-                            },
-                        );
-                    });
+            await transport.handleRequest(req as any, res, parsed as any);
                 } catch (e) {
                     console.error('Error parsing JSON body:', e);
-                    // Fallback to SDK parsing
-                    await new Promise<void>((resolve, reject) => {
-                        requestContext.run(
-                            {
-                                apikey: Array.isArray(apikey)
-                                    ? apikey[0]
-                                    : (apikey as string | undefined),
-                                applicationid: Array.isArray(applicationid)
-                                    ? applicationid[0]
-                                    : (applicationid as string | undefined),
-                            },
-                            async () => {
-                                try {
-                                    await transport.handleRequest(
-                                        req as any,
-                                        res,
-                                    );
-                                    resolve();
-                                } catch (e) {
-                                    console.error(
-                                        'Transport handleRequest fallback error:',
-                                        e,
-                                    );
-                                    reject(e);
-                                }
-                            },
-                        );
-                    });
+            // Fallback to SDK parsing
+            await transport.handleRequest(req as any, res);
                 }
                 return;
             }
 
             // Для GET і DELETE запытаў
-            await new Promise<void>((resolve, reject) => {
-                requestContext.run(
-                    {
-                        apikey: Array.isArray(apikey)
-                            ? apikey[0]
-                            : (apikey as string | undefined),
-                        applicationid: Array.isArray(applicationid)
-                            ? applicationid[0]
-                            : (applicationid as string | undefined),
-                    },
-                    async () => {
-                        try {
-                            await transport.handleRequest(req as any, res);
-                            resolve();
-                        } catch (e) {
-                            console.error('Transport handleRequest error:', e);
-                            reject(e);
-                        }
-                    },
-                );
-            });
+        await transport.handleRequest(req as any, res);
             return;
         }
 

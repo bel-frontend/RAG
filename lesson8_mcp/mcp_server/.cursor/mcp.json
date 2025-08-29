@@ -2,11 +2,7 @@
     "mcpServers": {
         "test-mcp": {
             "type": "http",
-            "url": "http://localhost:3002/mcp",
-            "headers": {
-                "apiKey": "API_KEY_1234567890",
-                "applicationid": "APPLICATION_ID"
-            }
+            "url": "http://localhost:3002/mcp"
         }
     }
 }

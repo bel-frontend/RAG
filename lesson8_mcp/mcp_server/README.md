@@ -18,7 +18,6 @@
 ## Структура праекта
 
 - `index.ts` — запуск HTTP-сервера і MCP-транспарту, маршруты, CORS, апрацоўка памылак.
-- `context.ts` — сховішча кантэксту запыта (AsyncLocalStorage) для `apikey` і `applicationid`.
 - `tools/echo.ts` — рэгістрацыя тула `echo`.
 - `tools/proverbs.ts` — тул `get_proverb_by_topic` (фетчыць JSON са спісам прыказак).
 - `tools/weather.ts` — тул `get_weather` (фетчыць радок з wttr.in).
@@ -60,7 +59,7 @@
 - `/mcp` — MCP-эндапоінт:
   - Для `POST` чытаем `JSON` з цела і перадаём у `transport.handleRequest(req, res, parsed)`. Калі парсінг няўдалы — перадаём кіраванне SDK (`handleRequest(req, res)`) без `parsed`.
   - Для `GET` і `DELETE` — таксама праз `transport.handleRequest(req, res)`.
-- Загалоўкі `apikey` і `applicationid` апускаем у `AsyncLocalStorage` (`requestContext.run(...)`), каб тулы маглі пры жаданні іх выкарыстоўваць.
+  (Аўтэнтыфікацыя не патрабуецца ў дэма; загалоўкі не выкарыстоўваюцца.)
 
 5) Апрацоўка памылак і грацыёзнае завяршэнне
 
@@ -109,17 +108,13 @@ curl -s http://localhost:3002/healthz | jq .
   "servers": {
     "goman-mcp": {
       "type": "http",
-      "url": "http://localhost:3002/mcp",
-      "headers": {
-        "apiKey": "<ваш_api_key>",
-        "applicationid": "<ваш_app_id>"
-      }
+      "url": "http://localhost:3002/mcp"
     }
   }
 }
 ```
 
-- Загалоўкі `apiKey` і `applicationid` патрапляюць у `requestContext` і могуць выкарыстоўвацца туламі (калі трэба аўтэнтыфікацыя ці мульці-арэндаванне).
+— У гэтым дэма загалоўкі не патрабуюцца.
 - У статлес-рэжыме дадатковы загаловак `Mcp-Session-Id` не патрабуецца — кожны запыт ізаляваны.
 
 ## Запуск у Docker
@@ -179,7 +174,7 @@ export function registerMyTools(mcp: McpServer) {
 - дадаць аўтэнтыфікацыю і лагаванне па патрэбе,
 - абгортваць у Docker для зручнай пастаўкі.
 
-Крынічныя файлы для старту: `index.ts`, `context.ts`, `tools/*`, `.vscode/mcp.json`.
+Крынічныя файлы для старту: `index.ts`, `tools/*`, `.vscode/mcp.json`.
 
 ## Налады MCP для Cursor і VS Code, і як запускаць
 
@@ -196,11 +191,7 @@ export function registerMyTools(mcp: McpServer) {
   "mcpServers": {
     "goman-mcp": {
       "type": "http",
-      "url": "http://localhost:3002/mcp",
-      "headers": {
-        "apiKey": "API_KEY_1234567890",
-        "applicationid": "APPLICATION_ID"
-      }
+      "url": "http://localhost:3002/mcp"
     }
   }
 }
@@ -234,11 +225,7 @@ jasonkneen.mcpsx-run,nickeolofsson.remember-mcp-vscode
   "servers": {
     "goman-mcp": {
       "type": "http",
-      "url": "http://localhost:3002/mcp",
-      "headers": {
-        "apiKey": "API_KEY_1234567890",
-        "applicationid": "APPLICATION_ID"
-      }
+      "url": "http://localhost:3002/mcp"
     }
   }
 }
@@ -264,5 +251,5 @@ curl -s http://localhost:3002/healthz | jq .
 ### Заўвагі
 
 - Статлес: сервер працуе без сесій, таму няма неабходнасці ў `Mcp-Session-Id` — кожны запыт незалежны.
-- Загалоўкі: у канфігурацыі выкарыстоўвайце `apiKey` і `applicationid`. На баку сервера яны будуць апрацаваныя і даступныя ў `requestContext` для тулаў.
+- Загалоўкі: у дэма не патрэбныя. Калі будзе патрэба ў аўтэнтыфікацыі — дададзеце пазней.
 - CORS: уключаны для `*`, таму кліент у браўзеры таксама зможа звязацца.
