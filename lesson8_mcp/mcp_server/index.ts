@@ -1,32 +1,47 @@
+// Core Node.js HTTP server module - creates basic HTTP server, handles requests/responses
 import { createServer } from 'node:http';
+
 // Declare Node's process in a way that doesn't require @types/node
 // (works in both Node and Bun runtimes)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const process: any = (globalThis as any).process;
+
+// Main MCP Server class - manages tool registration and MCP protocol communication
+// Provides interface for AI models to call registered tools
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+
+// HTTP Transport Layer - bridges HTTP requests to MCP protocol
+// Converts HTTP ↔ MCP protocol messages, handles stateless communication
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 
+// Echo tool registration - simple tool that returns input text (for testing MCP connectivity)
 import { registerEchoTools } from './tools/echo';
+
+// Proverbs tool registration - fetches Belarusian proverbs from external API
+// Supports filtering by topic, random selection, and limiting results
 import { registerProverbTools } from './tools/proverbs';
+
+// Weather tool registration - fetches current weather data from wttr.in service
+// Takes city name as input and returns weather information
 import { registerWeatherTools } from './tools/weather';
 
-// 1) MCP-сервер
+// 1) MCP server
 const mcp = new McpServer({ name: 'test-mcp', version: '0.1.0' });
 
-// 2) Рэгістрацыя тулаў (модульна)
+// 2) Tool registration (modular)
 registerEchoTools(mcp);
 registerProverbTools(mcp);
 registerWeatherTools(mcp);
 
-// 3) Транспарт (статлес) - без sessionIdGenerator для цалкам статлес рэжыму
+// 3) Transport (stateless) - without sessionIdGenerator for fully stateless mode
 const transport = new StreamableHTTPServerTransport({
-    sessionIdGenerator: undefined, // Гэта робіць транспарт цалкам статлес
+    sessionIdGenerator: undefined, // This makes the transport fully stateless
 });
 
-// падключаем MCP да транспарту
+// Connect MCP to the transport
 void mcp.connect(transport);
 
-// 4) HTTP-сервер (Node API; у Bun таксама працуе)
+// 4) HTTP server (Node API; also works in Bun)
 const httpServer = createServer(async (req, res) => {
     try {
         const host = req.headers.host ?? 'localhost';
@@ -63,10 +78,10 @@ const httpServer = createServer(async (req, res) => {
             // Ensure CORS for MCP route responses
             res.setHeader('Access-Control-Allow-Origin', '*');
 
-            // У статлес рэжыме не патрабуем Mcp-Session-Id header
-            // Кожны запыт цалкам незалежны
+        // In stateless mode, Mcp-Session-Id header is not required
+        // Each request is completely independent
 
-            // Для POST запытаў з JSON body
+        // For POST requests with JSON body
             if (req.method === 'POST') {
                 let raw = '';
                 await new Promise<void>((resolve, reject) => {
@@ -87,12 +102,12 @@ const httpServer = createServer(async (req, res) => {
                 return;
             }
 
-            // Для GET і DELETE запытаў
+            // For GET and DELETE requests
         await transport.handleRequest(req as any, res);
             return;
         }
 
-        // 404 для невядомых эндпоінтаў
+    // 404 for unknown endpoints
         res.writeHead(404, {
             'Content-Type': 'text/plain',
             'Access-Control-Allow-Origin': '*',
@@ -111,12 +126,12 @@ const httpServer = createServer(async (req, res) => {
     }
 });
 
-// Апрацоўка памылак сервера
+// Server error handling
 httpServer.on('error', (err) => {
     console.error('HTTP server error:', err);
 });
 
-// Апрацоўка закрыцця сервера
+// Server shutdown handling
 process.on('SIGINT', () => {
     console.log('Shutting down MCP server...');
     httpServer.close(() => {
@@ -133,7 +148,7 @@ process.on('SIGTERM', () => {
     });
 });
 
-// Апрацоўка неапрацаваных памылак
+// Handling uncaught errors
 process.on('uncaughtException', (err) => {
     console.error('Uncaught Exception:', err);
     httpServer.close(() => {

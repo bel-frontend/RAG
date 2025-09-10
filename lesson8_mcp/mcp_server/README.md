@@ -1,107 +1,123 @@
-# Як стварыць просты MCP-сервер: па кроках на прыкладзе гэтага праекта
 
-Гэты артыкул паказвае, як з нуля запусціць MCP-сервер (Model Context Protocol) з HTTP-транспартам, зарэгістраваць уласныя тулы і падключыць яго да кліента праз `mcp.json`.
+# How to Create a Simple MCP Server: Step-by-Step Example with This Project
 
-— Мы будзем выкарыстоўваць Bun (але код сумяшчальны з Node.js), SDK `@modelcontextprotocol/sdk`, валідацыю параметраў праз `zod`, і некалькі дэма-тулаў: `echo`, прыказкі і надвор’е.
 
-## Што мы будуем
+This article shows how to launch an MCP server (Model Context Protocol) from scratch with HTTP transport, register your own tools, and connect it to a client via `mcp.json`.
 
-- HTTP-сервер з двума маршрутамі:
-  - `GET /healthz` — праверка здароўя сервера.
-  - `/mcp` — MCP-эндапоінт (падтрымлівае `GET`, `POST`, `DELETE`).
-- MCP-сервер у статлес-рэжыме (без захавання сесій на баку сервера).
-- Набор тулаў (інструментаў), даступных праз MCP-кліента:
-  - `echo` — вяртае тэкст, які перададзены ва ўводзе.
-  - `get_proverb_by_topic` — прыказкі/прымаўкі па тэме з публічнага спісу (з опцыямі `topic`, `random`, `limit`).
-  - `get_weather` — кароткі радок з надвор’ем з сэрвісу wttr.in.
 
-## Структура праекта
+— We will use Bun (but the code is compatible with Node.js), the `@modelcontextprotocol/sdk` SDK, parameter validation via `zod`, and several demo tools: `echo`, proverbs, and weather.
 
-- `index.ts` — запуск HTTP-сервера і MCP-транспарту, маршруты, CORS, апрацоўка памылак.
-- `tools/echo.ts` — рэгістрацыя тула `echo`.
-- `tools/proverbs.ts` — тул `get_proverb_by_topic` (фетчыць JSON са спісам прыказак).
-- `tools/weather.ts` — тул `get_weather` (фетчыць радок з wttr.in).
-- `package.json` — залежнасці і скрыпты запуску праз Bun.
-- `Dockerfile`, `docker-compose.yml`, `deploy.sh` — кантэйнерызацыя і лакальны запуск у Docker.
-- `.vscode/mcp.json` — прыклад канфігурацыі MCP-кліента для падключэння да сервера.
+## What We Are Building
 
-## Асноўныя залежнасці
 
-- `@modelcontextprotocol/sdk` — MCP SDK (сервер + транспарт HTTP/стрэймы).
-- `zod` — апісанне і праверка схемы ўваходных параметраў тулаў.
-- `undici` — сучасны fetch для Node/Bun (у Bun fetch ужо даступны, але залежнасць ёсць у праекце).
+- HTTP server with two routes:
+  - `GET /healthz` — server health check.
+  - `/mcp` — MCP endpoint (supports `GET`, `POST`, `DELETE`).
+- MCP server in stateless mode (no session storage on the server side).
+- A set of tools available via the MCP client:
+  - `echo` — returns the text passed in the input.
+  - `get_proverb_by_topic` — proverbs by topic from a public list (with options `topic`, `random`, `limit`).
+  - `get_weather` — short weather string from the wttr.in service.
 
-## Архітэктура і паток запыту
+## Project Structure
 
-1) Ініцыялізуем MCP-сервер
 
-- У `index.ts` ствараецца `new McpServer({ name: 'goman-mcp', version: '0.1.0' })`.
+- `index.ts` — launches the HTTP server and MCP transport, routes, CORS, error handling.
+- `tools/echo.ts` — registration of the `echo` tool.
+- `tools/proverbs.ts` — the `get_proverb_by_topic` tool (fetches JSON with proverbs).
+- `tools/weather.ts` — the `get_weather` tool (fetches a string from wttr.in).
+- `package.json` — dependencies and Bun launch scripts.
+- `Dockerfile`, `docker-compose.yml`, `deploy.sh` — containerization and local Docker launch.
+- `.vscode/mcp.json` — example MCP client configuration for connecting to the server.
 
-2) Рэгіструем тулы модульна
+## Main Dependencies
 
-- `registerEchoTools(mcp)` з `tools/echo.ts`
-- `registerProverbTools(mcp)` з `tools/proverbs.ts`
-- `registerWeatherTools(mcp)` з `tools/weather.ts`
 
-Кожны тул:
-- дае `title`, `description`, `inputSchema` (на `zod`),
-- і рэалізацыю-рэспандэр: атрымлівае параметры і вяртае `content` з тэкстам.
+- `@modelcontextprotocol/sdk` — MCP SDK (server + HTTP/stream transport).
+- `zod` — description and validation of tool input parameter schemas.
+- `undici` — modern fetch for Node/Bun (Bun already has fetch, but the dependency is present in the project).
 
-3) Наладжваем HTTP-транспарт у статлес-рэжыме
+## Architecture and Request Flow
 
-- `new StreamableHTTPServerTransport({ sessionIdGenerator: undefined })` — адключаем генерацыю сесій, кожны запыт незалежны.
-- `mcp.connect(transport)` — падключаем MCP да транспарту.
 
-4) HTTP-сервер і маршруты
+1) Initialize the MCP server
 
-- CORS і preflight (`OPTIONS`) з загалоўкамі `Access-Control-*`.
-- `GET /healthz` — вяртае `{ ok: true, timestamp: ... }`.
-- `/mcp` — MCP-эндапоінт:
-  - Для `POST` чытаем `JSON` з цела і перадаём у `transport.handleRequest(req, res, parsed)`. Калі парсінг няўдалы — перадаём кіраванне SDK (`handleRequest(req, res)`) без `parsed`.
-  - Для `GET` і `DELETE` — таксама праз `transport.handleRequest(req, res)`.
-  (Аўтэнтыфікацыя не патрабуецца ў дэма; загалоўкі не выкарыстоўваюцца.)
+- In `index.ts`, create `new McpServer({ name: 'goman-mcp', version: '0.1.0' })`.
 
-5) Апрацоўка памылак і грацыёзнае завяршэнне
 
-- Сігналы `SIGINT`, `SIGTERM`, а таксама `uncaughtException` і `unhandledRejection` закрываюць сервер карэктна.
+2) Register tools modularly
 
-## Тулы падрабязна
+- `registerEchoTools(mcp)` from `tools/echo.ts`
+- `registerProverbTools(mcp)` from `tools/proverbs.ts`
+- `registerWeatherTools(mcp)` from `tools/weather.ts`
+
+Each tool:
+- provides `title`, `description`, `inputSchema` (using `zod`),
+- and an implementation-responder: receives parameters and returns `content` with text.
+
+
+3) Configure HTTP transport in stateless mode
+
+- `new StreamableHTTPServerTransport({ sessionIdGenerator: undefined })` — disables session generation, each request is independent.
+- `mcp.connect(transport)` — connect MCP to the transport.
+
+4) HTTP server and routes
+
+- CORS and preflight (`OPTIONS`) with `Access-Control-*` headers.
+- `GET /healthz` — returns `{ ok: true, timestamp: ... }`.
+- `/mcp` — MCP endpoint:
+  - For `POST`, read `JSON` from the body and pass to `transport.handleRequest(req, res, parsed)`. If parsing fails, pass control to the SDK (`handleRequest(req, res)`) without `parsed`.
+
+  - For `GET` and `DELETE` — also via `transport.handleRequest(req, res)`.
+  (Authentication is not required in the demo; headers are not used.)
+
+
+5) Error handling and graceful shutdown
+
+- Signals `SIGINT`, `SIGTERM`, as well as `uncaughtException` and `unhandledRejection` gracefully close the server.
+
+## Tools in Detail
+
 
 - `echo` (`tools/echo.ts`)
-  - Схема: `{ text: string }`
-  - Вяртае той жа тэкст.
+  - Schema: `{ text: string }`
+  - Returns the same text.
 
 - `get_proverb_by_topic` (`tools/proverbs.ts`)
-  - Схема: `{ topic?: string; random?: boolean; limit?: number <= 200 }`
-  - Фетчыць JSON са спісам прыказак, фільтруе па тэме, аддае выпадковыя або першыя `limit` радкоў.
-  - Памылкі акуратна перахопліваюцца і вяртаюцца як тэкст.
+  - Schema: `{ topic?: string; random?: boolean; limit?: number <= 200 }`
+  - Fetches JSON with a list of proverbs, filters by topic, returns random or first `limit` lines.
+  - Errors are neatly caught and returned as text.
 
 - `get_weather` (`tools/weather.ts`)
-  - Схема: `{ city: string }`
-  - Фетчыць кароткі радок з wttr.in: `"Мінск: +22°C ..."`.
+  - Schema: `{ city: string }`
+  - Fetches a short string from wttr.in: `"Minsk: +22°C ..."`.
 
-## Запуск лакальна (Bun)
+## Local Launch (Bun)
 
-Пераканайцеся, што ўсталяваны Bun.
+
+Make sure Bun is installed.
 
 ```sh
 bun install
 bun index.ts
 ```
 
-Пасля запуску ў логах:
+
+After launch, in the logs:
 - MCP Streamable HTTP Server on http://localhost:3002/mcp
 - Available endpoints: /healthz, /mcp
 
-Праверка здароўя:
+
+Health check:
 
 ```sh
 curl -s http://localhost:3002/healthz | jq .
 ```
 
-## Падключэнне MCP-кліента (mcp.json)
+## Connecting an MCP Client (mcp.json)
 
-У праекце ёсць прыклад канфігурацыі: `.vscode/mcp.json`.
+
+There is an example configuration in the project: `.vscode/mcp.json`.
 
 ```jsonc
 {
@@ -114,38 +130,44 @@ curl -s http://localhost:3002/healthz | jq .
 }
 ```
 
-— У гэтым дэма загалоўкі не патрабуюцца.
-- У статлес-рэжыме дадатковы загаловак `Mcp-Session-Id` не патрабуецца — кожны запыт ізаляваны.
 
-## Запуск у Docker
+— In this demo, headers are not required.
+- In stateless mode, the additional `Mcp-Session-Id` header is not required — each request is isolated.
 
-Каб сабраць і запусціць:
+## Running in Docker
+
+
+To build and run:
 
 ```sh
 docker compose build --no-cache
 docker compose up -d
 ```
 
-Пасля гэтага сервер будзе даступны на `http://localhost:3002/mcp`.
 
-Файлы для кантэйнерызацыі:
-- `Dockerfile` — на базе `oven/bun`, усталёўвае залежнасці і запускае `bun index.ts`.
-- `docker-compose.yml` — пракальчоўвае порт `3002:3002`, усталёўвае `NODE_ENV` і іншыя пераменныя асяроддзя.
-- `deploy.sh` — хуткі білд і запуск камандай з двух радкоў.
+After this, the server will be available at `http://localhost:3002/mcp`.
 
-## Тыповыя праблемы і як іх пазбягаць
 
-- CORS: калі кліент у браўзеры — праверце дазволеныя загалоўкі і метады. У гэтым прыкладзе CORS уключаны для `*`.
-- Сесіі: калі патрабуецца стан (сеансы), трэба будзе ўключыць `sessionIdGenerator` і захоўваць стан дзесьці (памяць/кэш/БД). Тут — статлес па змаўчанні.
-- Знешнія API: тул з прыказкамі і надвор’ем залежыць ад публічных сэрвісаў. Дадайце таймаўты/кэш, калі плануеце прадакшн.
+Files for containerization:
+- `Dockerfile` — based on `oven/bun`, installs dependencies and runs `bun index.ts`.
+- `docker-compose.yml` — maps port `3002:3002`, sets `NODE_ENV` and other environment variables.
+- `deploy.sh` — quick build and launch with a two-line command.
 
-## Як дадаць свой тул
+## Common Issues and How to Avoid Them
 
-1) Стварыце файл у `tools/` (напрыклад, `tools/mytool.ts`).
-2) Апішыце схему ўваходу праз `zod` і зяргіструйце тул праз `mcp.registerTool(...)`.
-3) Імпартуйце і выклічце рэгістрацыю ў `index.ts` побач з іншымі `register*Tools(...)`.
 
-Мінімальны шаблон:
+- CORS: if the client is in a browser — check allowed headers and methods. In this example, CORS is enabled for `*`.
+- Sessions: if state (sessions) is required, you will need to enable `sessionIdGenerator` and store state somewhere (memory/cache/DB). Here — stateless by default.
+- External APIs: the proverbs and weather tools depend on public services. Add timeouts/cache if you plan for production.
+
+## How to Add Your Own Tool
+
+
+1) Create a file in `tools/` (e.g., `tools/mytool.ts`).
+2) Describe the input schema using `zod` and register the tool via `mcp.registerTool(...)`.
+3) Import and call the registration in `index.ts` alongside other `register*Tools(...)`.
+
+Minimal template:
 
 ```ts
 import { z } from 'zod';
@@ -156,33 +178,37 @@ export function registerMyTools(mcp: McpServer) {
     'my_tool',
     {
       title: 'my_tool',
-      description: 'Што робіць тул',
+  description: 'What the tool does',
       inputSchema: { name: z.string() },
     },
     async ({ name }: { name: string }) => {
-      return { content: [{ type: 'text', text: `Вітаю, ${name}!` }] };
+  return { content: [{ type: 'text', text: `Hello, ${name}!` }] };
     },
   );
 }
 ```
 
-## Заключэнне
+## Conclusion
 
-Мы сабралі працоўны прыклад MCP-сервера з HTTP-транспартам, тлустай падтрымкай CORS, статлес-ідэалогіяй, і трыма дэма-туламі. Далей вы можаце:
-- падключыць кліент з вашым `mcp.json`,
-- пашырыць набор тулаў,
-- дадаць аўтэнтыфікацыю і лагаванне па патрэбе,
-- абгортваць у Docker для зручнай пастаўкі.
 
-Крынічныя файлы для старту: `index.ts`, `tools/*`, `.vscode/mcp.json`.
+We have assembled a working example of an MCP server with HTTP transport, robust CORS support, stateless ideology, and three demo tools. Next, you can:
+- connect a client with your `mcp.json`,
+- expand the set of tools,
+- add authentication and logging as needed,
+- wrap in Docker for convenient delivery.
 
-## Налады MCP для Cursor і VS Code, і як запускаць
+Key files to start: `index.ts`, `tools/*`, `.vscode/mcp.json`.
 
-Ніжэй — гатовыя прыклады канфігурацый і крокі запуску ў двух папулярных асяроддзях.
+## MCP Settings for Cursor and VS Code, and How to Launch
+
+
+Below are ready-made configuration examples and launch steps for two popular environments.
+
 
 ### Cursor (.cursor/mcp.json)
 
-1) Стварыце файл `.cursor/mcp.json` у каранёвай дырэкторыі вашага праекта (або ў вашым $HOME, калі хочаце агульнасістэмна).
+
+1) Create a `.cursor/mcp.json` file in the root directory of your project (or in your $HOME if you want it system-wide).
 
 Прыклад:
 
@@ -197,28 +223,35 @@ export function registerMyTools(mcp: McpServer) {
 }
 ```
 
-2) Запусціце сервер:
+
+2) Start the server:
 
 ```sh
 bun install
 bun index.ts
 ```
 
-3) Адкрыйце Cursor → Settings → MCP Servers і пераканайцеся, што `goman-mcp` падцягнуўся з канфігурацыі і пазначаны як "connected". Калі не бачыце — зрабіце Reload Window у Cursor.
 
-4) Праверце працу ў чат-акне Cursor: папрасіце мадэль выкарыстаць тул, напрыклад: «Выкліч тул get_weather для горада Minsk» або «Выкарыстай get_proverb_by_topic з тэмай “пра працу”». Cursor сам пабудуе выклік MCP-тула па схеме.
+3) Open Cursor → Settings → MCP Servers and make sure `goman-mcp` is loaded from the configuration and marked as "connected". If you don't see it — do Reload Window in Cursor.
 
-Парада: загалоўкі ў канфігурацыі ключоў (`apiKey`, `applicationid`) неадчувальныя да рэгістра пад капотам (Node апускае назвы да ніжняга рэгістра), таму можна пакінуць як у прыкладзе.
+
+4) Test in the Cursor chat window: ask the model to use a tool, for example: "Call the get_weather tool for the city Minsk" or "Use get_proverb_by_topic with the topic 'about work'". Cursor will build the MCP tool call according to the schema.
+
+
+Tip: headers in the configuration keys (`apiKey`, `applicationid`) are case-insensitive under the hood (Node lowers names to lowercase), so you can leave them as in the example.
+
 
 ### VS Code (.vscode/mcp.json)
 
-VS Code сам па сабе не ўключае убудаваны MCP-кліент, таму выкарыстоўвайце адзін з лёгкіх пашырэнняў-кліентаў. Усталюйце адно з наступных (любое падыдзе):
+
+VS Code does not include a built-in MCP client, so use one of the lightweight client extensions. Install one of the following (any will do):
 
 ```vscode-extensions
 jasonkneen.mcpsx-run,nickeolofsson.remember-mcp-vscode
 ```
 
-1) Пакладзіце канфіг у `.vscode/mcp.json` (у гэтым рэпо ўжо ёсць прыклад):
+
+1) Place the config in `.vscode/mcp.json` (there is already an example in this repo):
 
 ```jsonc
 {
@@ -231,25 +264,31 @@ jasonkneen.mcpsx-run,nickeolofsson.remember-mcp-vscode
 }
 ```
 
-2) Запусціце MCP-сервер:
+
+2) Start the MCP server:
 
 ```sh
 bun install
 bun index.ts
 ```
 
-3) У VS Code: Command Palette → перайдзіце ў секцыю пашырэння (у залежнасці ад выбранага пашырэння гэта можа быць "MCP Servers" або "MCP"), праверце, што `goman-mcp` падключаны.
 
-4) Калі карыстаецеся GitHub Copilot Chat, пашырэнне MCP-кліента дадасць вашы тулы ў пералік даступных. У чат-акне папрасіце: «Выкарыстай тул get_weather з city=Minsk» або «get_proverb_by_topic з random=true, limit=3» — Copilot зойдзецца на MCP-вызоў.
+3) In VS Code: Command Palette → go to the extension section (depending on the extension, this may be "MCP Servers" or "MCP"), check that `goman-mcp` is connected.
 
-5) Для хуткай праверкі сервера з-за межаў кліента: 
+
+4) If you use GitHub Copilot Chat, the MCP client extension will add your tools to the available list. In the chat window, ask: "Use the get_weather tool with city=Minsk" or "get_proverb_by_topic with random=true, limit=3" — Copilot will make the MCP call.
+
+
+5) For a quick server check outside the client:
 
 ```sh
 curl -s http://localhost:3002/healthz | jq .
 ```
 
-### Заўвагі
 
-- Статлес: сервер працуе без сесій, таму няма неабходнасці ў `Mcp-Session-Id` — кожны запыт незалежны.
-- Загалоўкі: у дэма не патрэбныя. Калі будзе патрэба ў аўтэнтыфікацыі — дададзеце пазней.
-- CORS: уключаны для `*`, таму кліент у браўзеры таксама зможа звязацца.
+### Notes
+
+
+- Stateless: the server works without sessions, so there is no need for `Mcp-Session-Id` — each request is independent.
+- Headers: not needed in the demo. If you need authentication — add it later.
+- CORS: enabled for `*`, so a browser client can also connect.
