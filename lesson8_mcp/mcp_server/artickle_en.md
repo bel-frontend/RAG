@@ -102,20 +102,91 @@ How the server works:
 1. An MCP server is created — it registers tools (`echo`, `get_proverb_by_topic`, `get_weather`).
 2. An HTTP transport is added — MCP can receive and send requests via `/mcp`.
 3. Routes:
-- `/healthz` — returns a simple JSON object to verify that the server is alive. We translate MD format. Please preserve the structure and the ideas.
-
+- `/healthz` — returns a simple JSON object to verify that the server is alive.
 - `/mcp` - the main endpoint through which Cursor or VS Code connects to the tools.
 4. Context — the headers (`apikey`, `applicationid`) are stored in storage so that the tools can use them.
 5. Termination — on shutdown (SIGINT/SIGTERM) the server closes properly.
 
+#### Key Implementation Details
+
+The server architecture consists of three main components:
+
+**1. MCP Server & Transport**
+
+```typescript
+const mcp = new McpServer({ name: 'test-mcp', version: '0.1.0' });
+const transport = new StreamableHTTPServerTransport({
+    sessionIdGenerator: undefined  // Stateless mode
+});
+mcp.connect(transport);
+```
+
+**2. HTTP Routing**
+
+Two endpoints handle all traffic:
+- `/healthz` - health checks
+- `/mcp` - MCP protocol communication (POST for tool calls, GET/DELETE for sessions)
+
+**3. CORS & Error Handling**
+
+The server includes proper CORS headers and graceful shutdown on SIGINT/SIGTERM signals.
+
 ### 🛠 Tools — the main magic here
 
-Three simple tools added for quick experimentation:
+Three simple tools demonstrate MCP capabilities:
 
-- `echo` — returns the text you pass to it (useful for checks). - `get_proverb_by_topic` returns proverbs by topic; it supports `random` and `limit`.
-- `get_weather` shows the weather via the wttr.in service.
+**1. Echo Tool** - Returns input text (useful for testing)
+```typescript
+mcp.registerTool('echo', {
+    title: 'Echo',
+    description: 'Return the same text',
+    inputSchema: { text: z.string() }
+}, async ({ text }) => ({
+    content: [{ type: 'text', text }]
+}));
+```
 
-Each tool is described by a `zod` schema. This guarantees accuracy: if the user passes parameters in the wrong format, MCP will report the incorrect format.
+**2. Proverbs Tool** - Fetches Belarusian proverbs with filtering
+```typescript
+mcp.registerTool('get_proverb_by_topic', {
+    inputSchema: {
+        topic: z.string().optional(),
+        random: z.boolean().optional(),
+        limit: z.number().int().positive().max(200).optional()
+    }
+}, async ({ topic, random, limit }) => {
+    const data = await fetch(PROVERBS_URL).then(r => r.json());
+    let items = data.map(d => d.message);
+    
+    // Filter by topic
+    if (topic) {
+        items = items.filter(m => m.toLowerCase().includes(topic.toLowerCase()));
+    }
+    
+    // Random selection with Fisher-Yates shuffle
+    if (random) {
+        // ... shuffle logic
+    }
+    
+    return { content: [{ type: 'text', text: items.join('\n') }] };
+});
+```
+
+**3. Weather Tool** - Shows current weather via wttr.in
+```typescript
+mcp.registerTool('get_weather', {
+    inputSchema: { city: z.string() }
+}, async ({ city }) => {
+    const weather = await fetch(`https://wttr.in/${city}?format=3`).then(r => r.text());
+    return { content: [{ type: 'text', text: weather }] };
+});
+```
+
+**Key Points:**
+- Use **Zod schemas** for input validation
+- Return format: `{ content: [{ type: 'text', text: string }] }`
+- Handle errors gracefully with try-catch
+- Add timeout handling for external APIs
 
 ### 🖇 Connecting to Cursor and VS Code
 
@@ -164,19 +235,119 @@ After that, in the Copilot Chat toolbar your tool should appear.
 }
 ```
 
+### 🖇 Connecting to IDEs
 
-#### 🐳 Docker mode
+#### Cursor Setup
 
-Would you like to package it right away?
-We will build and run it in Docker:
+1. Start the server: `bun index.ts`
+2. Verify it's running: `curl http://localhost:3002/healthz`
+3. Create `.cursor/mcp.json`:
 
+```json
+{
+  "mcpServers": {
+    "test-mcp": {
+      "type": "http",
+      "url": "http://localhost:3002/mcp",
+      "headers": {
+        "apiKey": "API_KEY_1234567890",
+        "applicationId": "APPLICATION_ID"
+      }
+    }
+  }
+}
 ```
+
+4. Enable in Settings → Model Context Protocol
+5. Test in Cursor Chat: "Get weather for Minsk"
+
+#### VS Code (Copilot)  Setup
+
+Similar process, but use `.vscode/mcp.json`:
+
+```json
+{
+    "servers": {
+        "test-mcp": {
+            "type": "http",
+            "url": "http://localhost:3002/mcp"
+        }
+    }
+}
+```
+
+Reload VS Code and test with `@test-mcp` prefix in Copilot Chat.
+
+**Pro tip:** You can configure multiple MCP servers or use environment variables for credentials.
+
+
+
+#### 🐳 Docker Deployment - Production Ready
+
+**Quick Start:**
+
+Would you like to package it right away? Build and run it in Docker:
+
+```bash
 docker compose build --no-cache
 docker compose up -d
 ```
 
 MCP will be available at `http://localhost:3002/mcp`.
- Team-friendly collaboration: everyone uses the same mental model and doesn’t waste time on “what works for me—doesn’t work for you.”
+
+**Understanding the Docker Setup**
+
+The repository includes a complete Docker configuration:
+
+**Dockerfile Example:**
+```dockerfile
+FROM oven/bun:1 as base
+WORKDIR /app
+
+COPY package.json bun.lockb ./
+RUN bun install --frozen-lockfile --production
+
+COPY . .
+
+EXPOSE 3002
+
+HEALTHCHECK --interval=30s --timeout=3s CMD \
+  curl -f http://localhost:3002/healthz || exit 1
+
+CMD ["bun", "index.ts"]
+```
+
+**docker-compose.yml:**
+```yaml
+version: '3.8'
+
+services:
+  mcp-server:
+    build: .
+    container_name: mcp-server
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+```
+
+**Useful Docker Commands:**
+```bash
+# View logs
+docker compose logs -f mcp-server
+
+# Restart service
+docker compose restart
+
+# Stop and remove
+docker compose down
+
+# Rebuild and restart
+docker compose up -d --build
+```
+
+Team-friendly collaboration: everyone uses the same mental model and doesn't waste time on "what works for me—doesn't work for you."
 
 #### 🤔 Typical pitfalls and how to bypass them
 
@@ -207,6 +378,46 @@ export function registerMyTools(mcp: McpServer) {
 }
 ```
  Ready—now you can add your own 'tricks' to MCP and use them from the IDE.
+
+#### ✍️ Building Custom Tools
+
+Here's a practical example of a database query tool:
+
+```typescript
+import { z } from 'zod';
+import { Pool } from 'pg';
+
+const pool = new Pool({ /* config */ });
+
+export function registerDatabaseTools(mcp: McpServer) {
+    mcp.registerTool('query_users', {
+        description: 'Search users by name or email',
+        inputSchema: {
+            searchTerm: z.string().min(2),
+            limit: z.number().int().max(100).default(10)
+        }
+    }, async ({ searchTerm, limit }) => {
+        const result = await pool.query(
+            'SELECT id, name, email FROM users WHERE name ILIKE $1 LIMIT $2',
+            [`%${searchTerm}%`, limit]
+        );
+        
+        return {
+            content: [{
+                type: 'text',
+                text: result.rows.map(r => `${r.name} <${r.email}>`).join('\n')
+            }]
+        };
+    });
+}
+```
+
+**Best Practices:**
+- Always validate inputs with Zod
+- Use parameterized queries to prevent SQL injection
+- Handle errors gracefully and return useful messages
+- Add timeouts for external API calls
+- Keep tool descriptions clear and concise
 
 ### 🎯 Results
 
