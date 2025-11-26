@@ -1,21 +1,17 @@
 /**
  * LangChain v1 - Базавы прыклад агента
  * 
- * Гэты прыклад дэманструе:
- * - Стварэнне агента з createReactAgent
- * - Вызначэнне інструментаў з tool()
- * - Выкарыстанне агульнай функцыі chatModel
- * - Streaming адказаў
+ * Гэты прыклад дэманструе новы API LangChain v1:
+ * - createAgent замест createReactAgent
+ * - tool з 'langchain' замест '@langchain/core/tools'
+ * - systemPrompt замест prompt/messageModifier
+ * - Новы streaming з streamMode
  * 
- * Заўвага: createReactAgent з @langchain/langgraph/prebuilt пазначаны як deprecated,
- * але ўсё яшчэ працуе. Новы API: createAgent з 'langchain' (патрабуе іншага падыходу).
+ * Дакументацыя: https://docs.langchain.com/oss/javascript/migrate/langchain-v1
  */
 
-import { createReactAgent } from '@langchain/langgraph/prebuilt';
-import { tool } from '@langchain/core/tools';
-import { SystemMessage, HumanMessage } from '@langchain/core/messages';
+import { createAgent, tool, HumanMessage } from 'langchain';
 import { z } from 'zod';
-import { chatModel, Model } from '../common/model';
 import { config } from 'dotenv';
 import { resolve } from 'path';
 
@@ -123,11 +119,11 @@ const dateTimeTool = tool(
 // 🤖 Ініцыялізацыя мадэлі
 // ============================================
 
-// Выкарыстоўваем агульную функцыю chatModel з common/model.ts
-// Можна выбраць любую мадэль з enum Model
-const model = await chatModel(Model.GPT4o_MINI);
+// У LangChain v1 можна выкарыстоўваць радковы ідэнтыфікатар мадэлі
+// Фармат: "правайдэр:мадэль", напрыклад "openai:gpt-4o-mini"
+const modelName = 'openai:gpt-4o-mini';
 
-console.log(`🤖 Выкарыстоўваю мадэль: ${Model.GPT4o_MINI}`);
+console.log(`🤖 Выкарыстоўваю мадэль: ${modelName}`);
 
 // ============================================
 // 🚀 Стварэнне агента
@@ -144,12 +140,14 @@ const systemPrompt = `Ты разумны AI-асістэнт, які разма
 Адказвай зразумела і каротка. Калі пытанне не патрабуе інструментаў, адказвай напрамую.
 Заўсёды адказвай па-беларуску.`;
 
-// createReactAgent - стварае агента з падтрымкай інструментаў
-// Выкарыстоўваем prompt замест deprecated messageModifier
-const agent = createReactAgent({
-    llm: model as any,
+// createAgent - новы API LangChain v1
+// - model: радковы ідэнтыфікатар "правайдэр:мадэль" або экзэмпляр мадэлі
+// - tools: масіў інструментаў
+// - systemPrompt: сістэмны prompt (замест prompt/messageModifier)
+const agent = createAgent({
+    model: modelName,
     tools: [weatherTool, proverbsTool, calculatorTool, dateTimeTool],
-    prompt: systemPrompt,
+    systemPrompt: systemPrompt,
 });
 
 // ============================================
@@ -173,19 +171,21 @@ async function chat(message: string) {
 }
 
 // Прыклад з streaming
+// У LangChain v1 назва вузла змянілася з "agent" на "model"
 async function chatWithStreaming(message: string) {
     console.log(`\n👤 Карыстальнік: ${message}`);
     console.log('─'.repeat(50));
     console.log('🤖 Агент: ');
 
-    const stream = await agent.stream({
-        messages: [new HumanMessage(message)],
-    });
+    const stream = await agent.stream(
+        { messages: [new HumanMessage(message)] },
+        { streamMode: 'values' }
+    );
 
     for await (const chunk of stream) {
-        const agentChunk = chunk as any;
-        if (agentChunk.agent?.messages?.[0]?.content) {
-            process.stdout.write(String(agentChunk.agent.messages[0].content));
+        const lastMessage = chunk.messages[chunk.messages.length - 1];
+        if (lastMessage?.content) {
+            process.stdout.write(String(lastMessage.content));
         }
     }
     
