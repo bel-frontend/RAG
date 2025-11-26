@@ -6,6 +6,9 @@
  * - Вызначэнне інструментаў з tool()
  * - Выкарыстанне агульнай функцыі chatModel
  * - Streaming адказаў
+ * 
+ * Заўвага: createReactAgent з @langchain/langgraph/prebuilt пазначаны як deprecated,
+ * але ўсё яшчэ працуе. Новы API: createAgent з 'langchain' (патрабуе іншага падыходу).
  */
 
 import { createReactAgent } from '@langchain/langgraph/prebuilt';
@@ -142,10 +145,11 @@ const systemPrompt = `Ты разумны AI-асістэнт, які разма
 Заўсёды адказвай па-беларуску.`;
 
 // createReactAgent - стварае агента з падтрымкай інструментаў
+// Выкарыстоўваем prompt замест deprecated messageModifier
 const agent = createReactAgent({
     llm: model as any,
     tools: [weatherTool, proverbsTool, calculatorTool, dateTimeTool],
-    messageModifier: new SystemMessage(systemPrompt),
+    prompt: systemPrompt,
 });
 
 // ============================================
