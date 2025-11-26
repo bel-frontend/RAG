@@ -584,12 +584,12 @@ npm install @langchain/langgraph
 
 ## Resources to Dive Deeper
 
-- [Official LangChain v1 Documentation](https://docs.langchain.com/oss/python/releases/langchain-v1)
+- [Official LangChain v1 Documentation (JS)](https://docs.langchain.com/oss/javascript/releases/langchain-v1)
 - [LangChain 1.0 Announcement Blog](https://blog.langchain.com/langchain-langchain-1-0-alpha-releases/)
 - [Agent Middleware Deep Dive](https://blog.langchain.com/agent-middleware/)
-- [LangGraph Documentation](https://langchain-ai.github.io/langgraphjs/)
-- [LangGraph GitHub](https://github.com/langchain-ai/langgraphjs)
-- [Migration Guide](https://docs.langchain.com/oss/python/migrate/langchain-v1)
-- [GitHub Repository](https://github.com/langchain-ai/langchain)
+- [LangGraph JS Documentation](https://docs.langchain.com/oss/javascript/langgraph/overview)
+- [LangGraph GitHub (JS)](https://github.com/langchain-ai/langgraphjs)
+- [Migration Guide (JS)](https://docs.langchain.com/oss/javascript/migrate/langchain-v1)
+- [LangChain GitHub (JS)](https://github.com/langchain-ai/langchainjs)
 
 Start building today—the tools are ready, the patterns are proven, and the possibilities are limitless.

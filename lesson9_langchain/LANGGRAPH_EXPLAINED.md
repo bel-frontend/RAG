@@ -707,6 +707,7 @@ LangGraph дазваляе ствараць **складаныя, цыклічн
 
 ## Дадатковыя рэсурсы
 
-- [LangGraph JS Documentation](https://langchain-ai.github.io/langgraphjs/)
-- [LangGraph Concepts](https://langchain-ai.github.io/langgraphjs/concepts/)
+- [LangGraph JS Documentation](https://docs.langchain.com/oss/javascript/langgraph/overview)
+- [LangGraph v1 Migration Guide](https://docs.langchain.com/oss/javascript/migrate/langgraph-v1)
+- [LangChain JS Documentation](https://docs.langchain.com/oss/javascript/langchain/overview)
 - [LangGraph GitHub](https://github.com/langchain-ai/langgraphjs)

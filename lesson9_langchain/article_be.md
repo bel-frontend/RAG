@@ -584,12 +584,12 @@ LangChain v1 здымае бар'еры паміж прататыпам і пр�
 
 ## Рэсурсы для паглыблення
 
-- [Афіцыйная дакументацыя LangChain v1](https://docs.langchain.com/oss/python/releases/langchain-v1)
+- [Афіцыйная дакументацыя LangChain v1 (JS)](https://docs.langchain.com/oss/javascript/releases/langchain-v1)
 - [Блог з анонсам LangChain 1.0](https://blog.langchain.com/langchain-langchain-1-0-alpha-releases/)
 - [Глыбокае паглыбленне ў Agent Middleware](https://blog.langchain.com/agent-middleware/)
-- [Дакументацыя LangGraph](https://langchain-ai.github.io/langgraphjs/)
-- [GitHub LangGraph](https://github.com/langchain-ai/langgraphjs)
-- [Кіраўніцтва па міграцыі](https://docs.langchain.com/oss/python/migrate/langchain-v1)
-- [GitHub рэпазіторый](https://github.com/langchain-ai/langchain)
+- [Дакументацыя LangGraph (JS)](https://docs.langchain.com/oss/javascript/langgraph/overview)
+- [GitHub LangGraph (JS)](https://github.com/langchain-ai/langgraphjs)
+- [Кіраўніцтва па міграцыі (JS)](https://docs.langchain.com/oss/javascript/migrate/langchain-v1)
+- [GitHub LangChain (JS)](https://github.com/langchain-ai/langchainjs)
 
 Пачніце ствараць сёння — інструменты гатовыя, патэрны правераны, а магчымасці бязмежныя.

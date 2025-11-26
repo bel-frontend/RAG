@@ -185,6 +185,10 @@ const app = workflow.compile();
 - [LangGraph v1 Migration Guide](https://docs.langchain.com/oss/javascript/migrate/langgraph-v1)
 - [LangChain JS Documentation](https://docs.langchain.com/oss/javascript/langchain/overview)
 - [LangGraph JS Documentation](https://docs.langchain.com/oss/javascript/langgraph/overview)
+- [LangChain v1 Release Notes](https://docs.langchain.com/oss/javascript/releases/langchain-v1)
+- [LangGraph v1 Release Notes](https://docs.langchain.com/oss/javascript/releases/langgraph-v1)
+- [LangChain GitHub (JS)](https://github.com/langchain-ai/langchainjs)
+- [LangGraph GitHub (JS)](https://github.com/langchain-ai/langgraphjs)
 
 ## 🇧🇾 Пра артыкулы
 
