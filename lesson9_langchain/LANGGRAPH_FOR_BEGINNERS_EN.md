@@ -2,7 +2,7 @@
 
 # LangGraph for Beginners: A Complete Guide
 
-> **What you'll learn:** How to build AI agent systems with LangGraph — from basic concepts to working code. We'll create an article-writing pipeline with multiple AI agents that collaborate, review each other's work, and iterate until the result is perfect.
+> **What you'll learn:** How to build AI agent systems with LangGraph - from basic concepts to working code. We'll create an article-writing pipeline with multiple AI agents that collaborate, review each other's work, and iterate until the result is perfect.
 
 ---
 
@@ -112,7 +112,7 @@ Imagine you are writing an article with a team:
 
 ---
 
-## PART 2: Annotation — How State is Created
+## PART 2: Annotation - How State is Created
 
 ### What is Annotation?
 
@@ -147,7 +147,7 @@ const Survey = {
 
 #### In LangGraph: Annotation.Root
 
-In LangGraph, state is created using `Annotation.Root()`. This is a special function that describes the structure of your data — what fields exist and how they should be updated.
+In LangGraph, state is created using `Annotation.Root()`. This is a special function that describes the structure of your data - what fields exist and how they should be updated.
 
 ```typescript
 import { Annotation } from '@langchain/langgraph';
@@ -211,7 +211,7 @@ reducer: (current, update) => update;
 // Result:   "Theme B"  ← new replaces old
 ```
 
-**Analogy:** You overwrite a file — the new content replaces the old one.
+**Analogy:** You overwrite a file - the new content replaces the old one.
 
 ```
 file.txt
@@ -235,7 +235,7 @@ reducer: (current, update) => [...current, ...update];
 // Result:   ["Message 1", "Message 2", "Message 3"]
 ```
 
-**Analogy:** You add new entries to a diary — the old ones remain.
+**Analogy:** You add new entries to a diary - the old ones remain.
 
 ```
 diary.txt
@@ -258,7 +258,7 @@ const ResearchState = Annotation.Root({
     messages: Annotation<BaseMessage[]>({
         // REDUCER: Add new messages to existing ones
         reducer: (current, update) => [...current, ...update],
-        // DEFAULT: Initial value — empty array
+        // DEFAULT: Initial value - empty array
         default: () => [],
     }),
     //
@@ -266,7 +266,7 @@ const ResearchState = Annotation.Root({
     // 1. Beginning:    messages = []
     // 2. Researcher:  messages = [] + [AIMessage] = [AIMessage]
     // 3. Writer: messages = [AIMessage] + [AIMessage] = [AIMessage, AIMessage]
-    // 4. And so on — all messages are stored
+    // 4. And so on - all messages are stored
 
     // ═══════════════════════════════════════════════════════
     // FIELD: topic (topic)
@@ -280,7 +280,7 @@ const ResearchState = Annotation.Root({
     // How it works:
     // 1. Beginning:    topic = ""
     // 2. User:   topic = "" → "LangChain"
-    // If someone else writes in topic — the old value will disappear
+    // If someone else writes in topic - the old value will disappear
 
     // ═══════════════════════════════════════════════════════
     // FIELD: iterationCount (iteration counter)
@@ -338,7 +338,7 @@ default: () => value
 
 #### Why a function and not just a value?
 
-This is a common JavaScript pitfall. If you use a plain object or array as default, all instances will share the same reference — changes in one place will affect all others!
+This is a common JavaScript pitfall. If you use a plain object or array as default, all instances will share the same reference - changes in one place will affect all others!
 
 ```typescript
 // POOR: If this is an object or array
@@ -369,7 +369,7 @@ default: () => false     // false
 
 ---
 
-## PART 3: Nodes — Agents
+## PART 3: Nodes - Agents
 
 ### What is a node?
 
@@ -421,7 +421,7 @@ async function myNode(
 
 #### Important: Partial<State>
 
-A node doesn't need to return the entire state — only the fields that changed. LangGraph will merge your partial update with the existing state using the reducers you defined.
+A node doesn't need to return the entire state - only the fields that changed. LangGraph will merge your partial update with the existing state using the reducers you defined.
 
 ```typescript
 // The full state has 6 fields:
@@ -439,7 +439,7 @@ state = {
 return {
     draft: "New draft",           // Changed
     messages: [new AIMessage("...")], // Added
-    // The other fields are not mentioned — they will remain as they were
+    // The other fields are not mentioned - they will remain as they were
 }
 ```
 
@@ -646,13 +646,13 @@ OPTION A: The article is good             OPTION B: Needs improvement
 
 #### Node 4: Finalizer (finalizerNode)
 
-The finalizer is the simplest node — it just copies the approved draft to the `finalArticle` field, marking the end of our workflow. This is called when the reviewer approves the article.
+The finalizer is the simplest node - it just copies the approved draft to the `finalArticle` field, marking the end of our workflow. This is called when the reviewer approves the article.
 
 ```typescript
 async function finalizerNode(
     state: ResearchStateType
 ): Promise<Partial<ResearchStateType>> {
-    // Simple node — copies the draft to the final article
+    // Simple node - copies the draft to the final article
     return {
         finalArticle: state.draft, // Final article
         messages: [new AIMessage({ content: `[READY]\n\n${state.draft}` })],
@@ -862,7 +862,7 @@ const workflow = new StateGraph(ResearchState)
 │               │  LangGraph automatically starts from it     │
 ├───────────────┼─────────────────────────────────────────────┤
 │  '__end__'    │  Virtual end node                           │
-│               │  When reached — the graph is completed      │
+│               │  When reached - the graph is completed      │
 └───────────────┴─────────────────────────────────────────────┘
 ```
 
@@ -874,7 +874,7 @@ We've defined our state, nodes, and edges. Now it's time to turn this blueprint 
 
 ### What is compile()?
 
-`compile()` is the process of transforming a **graph description** into an **executable program**. Until you call `compile()`, you just have a description of what you want to build — not an actual runnable system.
+`compile()` is the process of transforming a **graph description** into an **executable program**. Until you call `compile()`, you just have a description of what you want to build - not an actual runnable system.
 
 ```typescript
 // Graph description (blueprint)
@@ -949,7 +949,7 @@ WITH CHECKPOINTER:
     ✓ Can have multiple independent "conversations"
 ```
 
-#### Thread ID — identifier of the "thread"
+#### Thread ID - identifier of the "thread"
 
 ```typescript
 const config = {
@@ -959,8 +959,8 @@ const config = {
 };
 
 // Each thread_id is a separate story
-// 'article-1' — about one article
-// 'article-2' — about another article
+// 'article-1' - about one article
+// 'article-2' - about another article
 // They do not overlap!
 ```
 
@@ -1040,8 +1040,8 @@ const result = await app.invoke(
 ┌─────────────────────────────────────────────────────────────────┐
 │ 5. CONDITIONAL TRANSITION: shouldContinue(state)                │
 │    → Returns 'writer' or 'finalizer'                            │
-│    → If 'writer' — return to step 3                             │
-│    → If 'finalizer' — proceed further                           │
+│    → If 'writer' - return to step 3                             │
+│    → If 'finalizer' - proceed further                           │
 └───────────────────────────────┬─────────────────────────────────┘
                                 │ (if 'finalizer')
                                 ▼
@@ -1066,7 +1066,7 @@ const result = await app.invoke(
 
 ---
 
-## PART 6: FAQ — Frequently Asked Questions
+## PART 6: FAQ - Frequently Asked Questions
 
 ### Why does the reducer add messages but replace the topic?
 
@@ -1076,7 +1076,7 @@ const result = await app.invoke(
 
 ### What happens if I don’t specify a reducer?
 
-LangGraph will use the default behavior — **replacement** (like for the topic).
+LangGraph will use the default behavior - **replacement** (like for the topic).
 
 ### Why is iterationCount needed?
 
@@ -1090,10 +1090,10 @@ To **protect against infinite loops**. If the reviewer never says "approved", th
 
 These are **special virtual nodes**:
 
-- `__start__` — where the graph begins
-- `__end__` — where the graph ends
+- `__start__` - where the graph begins
+- `__end__` - where the graph ends
 
-They do not execute code — they only mark the boundaries.
+They do not execute code - they only mark the boundaries.
 
 ### Can there be multiple end nodes?
 
@@ -1123,16 +1123,16 @@ Congratulations! You've learned the core concepts of LangGraph. Let's recap what
 
 Now that you understand the basics, you can:
 
-1. **Build your own agent system** — Start with a simple two-node graph and gradually add complexity
-2. **Experiment with different flows** — Try creating graphs with multiple conditional branches
-3. **Add persistence** — Use `MemorySaver` or database-backed checkpointers for production
-4. **Explore advanced features** — Look into subgraphs, parallel execution, and human-in-the-loop patterns
+1. **Build your own agent system** - Start with a simple two-node graph and gradually add complexity
+2. **Experiment with different flows** - Try creating graphs with multiple conditional branches
+3. **Add persistence** - Use `MemorySaver` or database-backed checkpointers for production
+4. **Explore advanced features** - Look into subgraphs, parallel execution, and human-in-the-loop patterns
 
 ### Key Takeaways
 
 - **Think in graphs**: Break down your AI workflow into discrete steps (nodes) connected by rules (edges)
 - **State is everything**: All communication between nodes happens through the shared state
-- **Reducers matter**: Choose the right reducer for each field — append for history, replace for current values
+- **Reducers matter**: Choose the right reducer for each field - append for history, replace for current values
 - **Cycles enable iteration**: Unlike simple chains, graphs can loop back for refinement
 
 The article-writing example we built demonstrates a real-world pattern: **research → write → review → (repeat if needed) → finalize**. This same pattern applies to many AI applications: code review, content moderation, multi-step reasoning, and more.
