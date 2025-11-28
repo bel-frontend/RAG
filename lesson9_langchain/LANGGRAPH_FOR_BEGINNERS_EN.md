@@ -6,13 +6,13 @@
 
 ---
 
-# PART 1: Basic Concepts
+## PART 1: Basic Concepts
 
-## What is a Graph?
+### What is a Graph?
 
 Before diving into LangGraph, it's essential to understand what a **graph** is in programming.
 
-### A Graph is a Data Structure
+#### A Graph is a Data Structure
 
 Imagine a subway map:
 
@@ -31,16 +31,16 @@ Imagine a subway map:
         [D]                         [Cultural Institute]
 ```
 
-### In LangGraph:
+#### In LangGraph:
 
 - **Nodes** are functions (agents) that perform tasks.
 - **Edges** are rules indicating the order in which tasks are executed.
 
 ---
 
-## Why is LangGraph Needed?
+### Why is LangGraph Needed?
 
-### Problem: Traditional AI Programs are Linear
+#### Problem: Traditional AI Programs are Linear
 
 ```
 Typical Chain:
@@ -58,7 +58,7 @@ This works for simple tasks, but what if:
 - You need to **verify the result** and possibly repeat?
 - You need **multiple agents** with different roles?
 
-### Solution: LangGraph Allows Creating Cycles
+#### Solution: LangGraph Allows Creating Cycles
 
 ```
 LangGraph (Graph):
@@ -79,9 +79,9 @@ LangGraph (Graph):
 
 ---
 
-## What is "state"?
+### What is "state"?
 
-### State is the memory of the program.
+#### State is the memory of the program.
 
 Imagine you are writing an article with a team:
 
@@ -112,13 +112,13 @@ Imagine you are writing an article with a team:
 
 ---
 
-# PART 2: Annotation — How State is Created
+## PART 2: Annotation — How State is Created
 
-## What is Annotation?
+### What is Annotation?
 
 `Annotation` is a way of **describing the structure of a state**. It is like creating a form with fields.
 
-### Analogy: Survey
+#### Analogy: Survey
 
 Imagine you are creating a survey:
 
@@ -145,7 +145,7 @@ const Survey = {
 };
 ```
 
-### In LangGraph: Annotation.Root
+#### In LangGraph: Annotation.Root
 
 In LangGraph, state is created using `Annotation.Root()`. This is a special function that describes the structure of your data — what fields exist and how they should be updated.
 
@@ -165,9 +165,9 @@ Each field inside `Annotation.Root` has two important properties: **reducer** (h
 
 ---
 
-## What is a Reducer?
+### What is a Reducer?
 
-### Problem: How to merge data?
+#### Problem: How to merge data?
 
 What should you do when multiple agents write to the same field?
 
@@ -178,7 +178,7 @@ Agent 2 writes: topic = "Topic B"
 What should be in topic? "Topic A"? "Topic B"? "Topic A + Topic B"?
 ```
 
-### Solution: Reducer - a function that resolves
+#### Solution: Reducer - a function that resolves
 
 **Reducer** is a function that takes:
 
@@ -195,9 +195,9 @@ reducer: (current, update) => result;
 //         └── Current value
 ```
 
-### Examples of Reducers:
+#### Examples of Reducers:
 
-#### 1. Reducer "REPLACE"
+##### 1. Reducer "REPLACE"
 
 The new value completely replaces the old one.
 
@@ -221,7 +221,7 @@ Was:   "Old text"
 Is:    "New text"
 ```
 
-#### 2. Reducer "APPEND"
+##### 2. Reducer "APPEND"
 
 New elements are added to the existing ones.
 
@@ -248,7 +248,7 @@ Became: "Monday: did A"
         "Wednesday: did C" ← added
 ```
 
-### Full example of the state:
+#### Full example of the state:
 
 ```typescript
 const ResearchState = Annotation.Root({
@@ -298,7 +298,7 @@ const ResearchState = Annotation.Root({
 });
 ```
 
-### Visualization of Reducers:
+#### Visualization of Reducers:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -328,7 +328,7 @@ const ResearchState = Annotation.Root({
 
 ---
 
-## What is default?
+### What is default?
 
 `default` is a function that returns the **initial value** of a field.
 
@@ -336,7 +336,7 @@ const ResearchState = Annotation.Root({
 default: () => value
 ```
 
-### Why a function and not just a value?
+#### Why a function and not just a value?
 
 This is a common JavaScript pitfall. If you use a plain object or array as default, all instances will share the same reference — changes in one place will affect all others!
 
@@ -348,7 +348,7 @@ default: []  // All instances will refer to the same array!
 default: () => []  // Each instance will get its own array
 ```
 
-### Examples:
+#### Examples:
 
 ```typescript
 // For a string
@@ -369,9 +369,9 @@ default: () => false     // false
 
 ---
 
-# PART 3: Nodes — Agents
+## PART 3: Nodes — Agents
 
-## What is a node?
+### What is a node?
 
 **Node** is a function that:
 
@@ -379,7 +379,7 @@ default: () => false     // false
 2. **Performs** some work (for example, calls LLM)
 3. **Returns** a partial state update
 
-### Analogy: Worker on the Assembly Line
+#### Analogy: Worker on the Assembly Line
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -399,7 +399,7 @@ Each worker:
 3. Passes it on with additions
 ```
 
-### Node Structure in Code:
+#### Node Structure in Code:
 
 ```typescript
 async function myNode(
@@ -419,7 +419,7 @@ async function myNode(
 }
 ```
 
-### Important: Partial<State>
+#### Important: Partial<State>
 
 A node doesn't need to return the entire state — only the fields that changed. LangGraph will merge your partial update with the existing state using the reducers you defined.
 
@@ -445,11 +445,11 @@ return {
 
 ---
 
-## Our nodes in detail
+### Our nodes in detail
 
 Now let's look at the four nodes in our article-writing system. Each node has a specific role and passes its results to the next one through the shared state.
 
-### Node 1: Researcher (researcherNode)
+#### Node 1: Researcher (researcherNode)
 
 The researcher is the first agent in our pipeline. It takes the topic and generates research materials that will be used by the writer.
 
@@ -523,7 +523,7 @@ INPUT (state):                       OUTPUT (update):
 
 ---
 
-### Node 2: Writer (writerNode)
+#### Node 2: Writer (writerNode)
 
 The writer takes the research and creates an article draft. If this is a revision (after reviewer feedback), it also considers the review comments. Notice how `iterationCount` helps us track how many times the article has been rewritten.
 
@@ -587,7 +587,7 @@ Writing without comments             Considering comments
 
 ---
 
-### Node 3: Reviewer (reviewerNode)
+#### Node 3: Reviewer (reviewerNode)
 
 The reviewer evaluates the draft and decides if it's ready for publication. The key here is the output: if the review contains "APPROVED", the article moves to finalization. Otherwise, it goes back to the writer for improvements. This is what enables the **cycle** in our graph.
 
@@ -644,7 +644,7 @@ OPTION A: The article is good             OPTION B: Needs improvement
 
 ---
 
-### Node 4: Finalizer (finalizerNode)
+#### Node 4: Finalizer (finalizerNode)
 
 The finalizer is the simplest node — it just copies the approved draft to the `finalArticle` field, marking the end of our workflow. This is called when the reviewer approves the article.
 
@@ -672,13 +672,13 @@ INPUT:                              OUTPUT:
 
 ---
 
-# PART 4: Edges
+## PART 4: Edges
 
-## What is an edge?
+### What is an edge?
 
 **Edge** is a rule that states: "After this node, the following node is executed."
 
-### Analogy: Arrows on the Diagram
+#### Analogy: Arrows on the Diagram
 
 ```
 Recipe steps:
@@ -689,9 +689,9 @@ Recipe steps:
       TRANSITION         TRANSITION        TRANSITION         END
 ```
 
-### Two Types of Transitions in LangGraph:
+#### Two Types of Transitions in LangGraph:
 
-#### 1. Simple Transitions (addEdge)
+##### 1. Simple Transitions (addEdge)
 
 **Always** go to the same node.
 
@@ -711,7 +711,7 @@ workflow.addEdge('researcher', 'writer');
                    (always)
 ```
 
-#### 2. Conditional Transitions (addConditionalEdges)
+##### 2. Conditional Transitions (addConditionalEdges)
 
 The choice of the next node **depends on the state**.
 
@@ -740,7 +740,7 @@ workflow.addConditionalEdges(
 
 ---
 
-## Detailed Function shouldContinue
+### Detailed Function shouldContinue
 
 This is the "brain" of our conditional edge. It examines the current state and decides where to go next. The function must return a string that matches one of the keys in the mapping object we defined in `addConditionalEdges`.
 
@@ -776,7 +776,7 @@ function shouldContinue(state: ResearchStateType): 'writer' | 'finalizer' {
 }
 ```
 
-### Decision flowchart:
+#### Decision flowchart:
 
 ```
                          ┌───────────────────┐
@@ -813,11 +813,11 @@ function shouldContinue(state: ResearchStateType): 'writer' | 'finalizer' {
 
 ---
 
-## How the graph is built
+### How the graph is built
 
 Now let's put everything together! Building a graph in LangGraph follows a simple pattern: create the graph, add nodes, connect them with edges, and compile.
 
-### Sequence of creation:
+#### Sequence of creation:
 
 ```typescript
 // ═══════════════════════════════════════════════════════════════
@@ -854,7 +854,7 @@ const workflow = new StateGraph(ResearchState)
     .addEdge('finalizer', '__end__'); // Finalizer → End
 ```
 
-### Special nodes:
+#### Special nodes:
 
 ```
 ┌───────────────┬─────────────────────────────────────────────┐
@@ -868,11 +868,11 @@ const workflow = new StateGraph(ResearchState)
 
 ---
 
-# PART 5: Compilation and execution
+## PART 5: Compilation and execution
 
 We've defined our state, nodes, and edges. Now it's time to turn this blueprint into a running application!
 
-## What is compile()?
+### What is compile()?
 
 `compile()` is the process of transforming a **graph description** into an **executable program**. Until you call `compile()`, you just have a description of what you want to build — not an actual runnable system.
 
@@ -888,7 +888,7 @@ const app = workflow.compile();
 //    └── Now this can be run!
 ```
 
-### Analogy: Recipe vs. Finished Dish
+#### Analogy: Recipe vs. Finished Dish
 
 ```
 workflow (description)                 app (compiled program)
@@ -903,9 +903,9 @@ Cannot be eaten!                       Can be eaten!
 
 ---
 
-## Checkpointer (MemorySaver)
+### Checkpointer (MemorySaver)
 
-### What is it?
+#### What is it?
 
 **Checkpointer** is a mechanism for **saving state** after each step.
 
@@ -919,7 +919,7 @@ const app = workflow.compile({
 });
 ```
 
-### Why is this needed?
+#### Why is this needed?
 
 ```
 WITHOUT CHECKPOINTER:
@@ -949,7 +949,7 @@ WITH CHECKPOINTER:
     ✓ Can have multiple independent "conversations"
 ```
 
-### Thread ID — identifier of the "thread"
+#### Thread ID — identifier of the "thread"
 
 ```typescript
 const config = {
@@ -966,11 +966,11 @@ const config = {
 
 ---
 
-## Running the Graph
+### Running the Graph
 
 Finally! Let's run our graph. The `invoke()` function takes initial state values and configuration, then executes the entire graph from start to finish.
 
-### The invoke() Function
+#### The invoke() Function
 
 ```typescript
 const result = await app.invoke(
@@ -988,7 +988,7 @@ const result = await app.invoke(
 );
 ```
 
-### What Happens When `invoke()` is Called:
+#### What Happens When `invoke()` is Called:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -1066,27 +1066,27 @@ const result = await app.invoke(
 
 ---
 
-# PART 6: FAQ — Frequently Asked Questions
+## PART 6: FAQ — Frequently Asked Questions
 
-## Why does the reducer add messages but replace the topic?
+### Why does the reducer add messages but replace the topic?
 
 **Messages** represent history. We want to keep all messages throughout the process.
 
 **Topic** is the current theme. When the topic changes, the old one is no longer needed.
 
-## What happens if I don’t specify a reducer?
+### What happens if I don’t specify a reducer?
 
 LangGraph will use the default behavior — **replacement** (like for the topic).
 
-## Why is iterationCount needed?
+### Why is iterationCount needed?
 
 To **protect against infinite loops**. If the reviewer never says "approved", the program will keep cycling between the writer and the reviewer.
 
-## Can one node directly invoke another?
+### Can one node directly invoke another?
 
 **No.** Nodes do not know about each other. They only read/write state. LangGraph determines who executes next based on transitions.
 
-## What are **start** and **end**?
+### What are **start** and **end**?
 
 These are **special virtual nodes**:
 
@@ -1095,7 +1095,7 @@ These are **special virtual nodes**:
 
 They do not execute code — they only mark the boundaries.
 
-## Can there be multiple end nodes?
+### Can there be multiple end nodes?
 
 Yes! For example:
 
@@ -1106,7 +1106,7 @@ Yes! For example:
 
 ---
 
-# Conclusion
+## Conclusion
 
 Congratulations! You've learned the core concepts of LangGraph. Let's recap what we covered:
 
@@ -1119,7 +1119,7 @@ Congratulations! You've learned the core concepts of LangGraph. Let's recap what
 | **Conditional Edges**   | Dynamic selection of the next node                   |
 | **Checkpointer**        | Saves the state for continuation later               |
 
-## What's Next?
+### What's Next?
 
 Now that you understand the basics, you can:
 
@@ -1128,7 +1128,7 @@ Now that you understand the basics, you can:
 3. **Add persistence** — Use `MemorySaver` or database-backed checkpointers for production
 4. **Explore advanced features** — Look into subgraphs, parallel execution, and human-in-the-loop patterns
 
-## Key Takeaways
+### Key Takeaways
 
 - **Think in graphs**: Break down your AI workflow into discrete steps (nodes) connected by rules (edges)
 - **State is everything**: All communication between nodes happens through the shared state
