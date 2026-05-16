@@ -7,6 +7,10 @@ export interface HybridRetrieveOptions {
   fileNameIncludes?: string;
 }
 
+// Standard k value from the RRF paper. Larger k dampens rank differences,
+// smaller k makes top ranks dominate more strongly.
+const RRF_K = 60;
+
 export class HybridRetriever {
   constructor(
     private readonly vectorRetriever: QdrantRetriever,
@@ -23,16 +27,24 @@ export class HybridRetriever {
       this.lexicalRetriever.retrieve(query, limit, options),
     ]);
 
-    const merged = mergeSources([
-      ...(vectorSources.status === 'fulfilled' ? vectorSources.value : []),
-      ...(lexicalSources.status === 'fulfilled' ? lexicalSources.value : []),
-    ]).filter((source) => matchesSourceFile(source, options?.fileNameIncludes));
-
     if (vectorSources.status === 'rejected') {
       console.warn(`Vector retrieval failed: ${vectorSources.reason}`);
     }
 
-    return merged.slice(0, limit);
+    const vectorList = vectorSources.status === 'fulfilled' ? vectorSources.value : [];
+    const lexicalList = lexicalSources.status === 'fulfilled' ? lexicalSources.value : [];
+
+    const fused = reciprocalRankFusion(
+      [
+        { label: 'vector', sources: vectorList },
+        { label: 'lexical', sources: lexicalList },
+      ],
+      RRF_K
+    );
+
+    return fused
+      .filter((source) => matchesSourceFile(source, options?.fileNameIncludes))
+      .slice(0, limit);
   }
 
   async retrievePageRange(options: {
@@ -55,22 +67,49 @@ export class HybridRetriever {
   }
 }
 
+interface RankedList {
+  label: 'vector' | 'lexical';
+  sources: RetrievedSource[];
+}
+
+// Reciprocal Rank Fusion: each source gets Σ 1 / (k + rank_i) across lists.
+// Source.score after fusion is rank-based (typically 0–0.04), not cosine.
+function reciprocalRankFusion(lists: RankedList[], k: number): RetrievedSource[] {
+  const byKey = new Map<string, RetrievedSource & { rrf: number }>();
+
+  for (const list of lists) {
+    for (const [index, source] of list.sources.entries()) {
+      const rank = index + 1;
+      const contribution = 1 / (k + rank);
+      const key = sourceKey(source);
+      const existing = byKey.get(key);
+
+      if (existing) {
+        existing.rrf += contribution;
+        if (list.label === 'vector') existing.vectorRank = rank;
+        if (list.label === 'lexical') existing.lexicalRank = rank;
+        continue;
+      }
+
+      byKey.set(key, {
+        ...source,
+        rrf: contribution,
+        vectorRank: list.label === 'vector' ? rank : undefined,
+        lexicalRank: list.label === 'lexical' ? rank : undefined,
+      });
+    }
+  }
+
+  return [...byKey.values()]
+    .sort((left, right) => right.rrf - left.rrf)
+    .map(({ rrf, ...rest }) => ({ ...rest, score: rrf }));
+}
+
 function matchesSourceFile(source: RetrievedSource, fileNameIncludes?: string): boolean {
   if (!fileNameIncludes) return true;
   return (source.fileName || '').toLowerCase().includes(fileNameIncludes.toLowerCase());
 }
 
-function mergeSources(sources: RetrievedSource[]): RetrievedSource[] {
-  const byKey = new Map<string, RetrievedSource>();
-
-  for (const source of sources) {
-    const key = `${source.fileName || 'unknown'}:${source.page || 'unknown'}:${source.text.slice(0, 160)}`;
-    const existing = byKey.get(key);
-
-    if (!existing || source.score > existing.score) {
-      byKey.set(key, source);
-    }
-  }
-
-  return [...byKey.values()].sort((left, right) => right.score - left.score);
+function sourceKey(source: RetrievedSource): string {
+  return `${source.fileName || 'unknown'}:${source.page || 'unknown'}:${source.text.slice(0, 160)}`;
 }

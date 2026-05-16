@@ -5,87 +5,75 @@ import { parseStructuredOutput, schemaInstruction } from './json';
 import {
   EvaluationResultSchema,
   type EvaluationResult,
-  type RagSearchOutput,
+  type RerankedSource,
   type SearchPlan,
   type ToolName,
 } from './schemas';
 
 const EVALUATOR_SYSTEM_PROMPT = [
-  'You are a RAG retrieval evaluator.',
-  'You receive a user question and a list of retrieved text chunks.',
-  'Your job is to decide how relevant each chunk is to the question.',
-  'Assign a relevanceScore from 0.0 (completely irrelevant) to 1.0 (directly answers the question).',
-  'Set sufficientForAnswer to true if the relevant chunks together contain enough information to answer the question.',
-  'Set qualityScore to the average relevanceScore of chunks with score >= 0.3.',
-  'Include in relevantSources only chunks with relevanceScore >= 0.25.',
-  'Be strict: prefer fewer high-quality chunks over many weak ones.',
-  'If sufficientForAnswer is false, explain clearly what is missing in evaluationReason.',
-].join(' ');
-
-// For list-style tools (folk wisdom, dialect), treat any found chunk as sufficient
-// since individual proverbs/entries are intentionally short and varied.
-const LENIENT_EVALUATOR_SYSTEM_PROMPT = [
-  'You are a RAG retrieval evaluator for a collection of short text entries (proverbs, dictionary entries, folk wisdom).',
-  'Each chunk may be a standalone short entry — evaluate the collection as a whole, not individual entries.',
-  'Assign a relevanceScore from 0.0 to 1.0 for each chunk.',
-  'For list, section, or explore requests, prefer broad topical coverage and variety over a tiny set of perfect matches.',
-  'Set sufficientForAnswer to true if at least some chunks are topically related to the question.',
-  'Set qualityScore to the average relevanceScore of chunks with score >= 0.15.',
-  'Include in relevantSources all chunks with relevanceScore >= 0.15.',
-  'Set sufficientForAnswer to false only if zero chunks relate to the question topic.',
+  'You are a RAG sufficiency grader.',
+  'You receive a user question and a small set of already reranked top text chunks.',
+  'Decide whether the chunks together contain enough information to answer the question.',
+  'For narrow factual questions require that the answer is explicitly present in the chunks.',
+  'For list, section, or explore requests (proverbs, signs, examples), treat any meaningful topical coverage as sufficient.',
+  'Set qualityScore to a 0.0–1.0 estimate of overall answer quality given these chunks.',
+  'If sufficientForAnswer is false, explain in evaluationReason what is missing or unclear.',
+  'Do not re-rank, drop, or invent sources — relevantSources must echo the input chunks unchanged.',
 ].join(' ');
 
 export class RagResultEvaluator {
   async evaluate(
     question: string,
-    searchOutput: RagSearchOutput,
+    rankedSources: RerankedSource[],
     tool: ToolName,
     plan?: SearchPlan
   ): Promise<EvaluationResult> {
-    if (!searchOutput.found || searchOutput.sources.length === 0) {
-      return emptyEvaluation('No sources retrieved.');
+    if (rankedSources.length === 0) {
+      return emptyEvaluation('No reranked sources available.');
     }
 
     const model = await chatModel(config.chat.model, {
       ollamaUrl: config.chat.ollamaUrl,
     });
 
-    const isLenient = tool === 'folk_wisdom_search'
-      || tool === 'dialect_dictionary_search'
-      || plan?.resultMode === 'list'
-      || plan?.resultMode === 'section'
-      || plan?.resultMode === 'explore';
-    const systemPrompt = isLenient ? LENIENT_EVALUATOR_SYSTEM_PROMPT : EVALUATOR_SYSTEM_PROMPT;
+    const resultMode = plan?.resultMode || 'answer';
+    const isBroad = resultMode === 'list' || resultMode === 'section' || resultMode === 'explore';
 
-    const response = await model.invoke([
-      new SystemMessage(systemPrompt),
-      new SystemMessage(
-        schemaInstruction(
-          'EvaluationResult',
-          '{"sufficientForAnswer":boolean,"qualityScore":0.0-1.0,"evaluationReason":"string","relevantSources":[{"text":"string","score":number,"fileName":"string","page":number,"relevanceScore":0.0-1.0,"relevanceReason":"string"}]}'
-        )
-      ),
-      new HumanMessage(
-        JSON.stringify({
-          question,
-          resultMode: plan?.resultMode || 'answer',
-          desiredResultCount: plan?.desiredResultCount,
-          semanticFacets: plan?.semanticFacets || [],
-          retrievedSources: searchOutput.sources.map((source, index) => ({
-            id: index + 1,
-            fileName: source.fileName,
-            page: source.page,
-            score: source.score,
-            matchedQueries: source.matchedQueries || [],
-            text: source.text.slice(0, 600),
-          })),
-        })
-      ),
-    ]);
+    try {
+      const response = await model.invoke([
+        new SystemMessage(EVALUATOR_SYSTEM_PROMPT),
+        new SystemMessage(
+          schemaInstruction(
+            'EvaluationResult',
+            '{"sufficientForAnswer":boolean,"qualityScore":0.0-1.0,"evaluationReason":"string","relevantSources":[]}'
+          )
+        ),
+        new HumanMessage(
+          JSON.stringify({
+            question,
+            resultMode,
+            tool,
+            isBroad,
+            rerankedSources: rankedSources.map((source, index) => ({
+              id: index + 1,
+              fileName: source.fileName,
+              page: source.page,
+              relevanceScore: source.relevanceScore,
+              text: source.text.slice(0, 600),
+            })),
+          })
+        ),
+      ]);
 
-    const fallback = gracefulFallback(searchOutput, isLenient);
+      const parsed = parseStructuredOutput(response.content, EvaluationResultSchema, fallbackEvaluation(rankedSources, isBroad));
 
-    return parseStructuredOutput(response.content, EvaluationResultSchema, fallback);
+      return {
+        ...parsed,
+        relevantSources: rankedSources,
+      };
+    } catch {
+      return fallbackEvaluation(rankedSources, isBroad);
+    }
   }
 }
 
@@ -98,16 +86,14 @@ function emptyEvaluation(reason: string): EvaluationResult {
   };
 }
 
-function gracefulFallback(searchOutput: RagSearchOutput, lenient: boolean): EvaluationResult {
-  const sources = searchOutput.sources.map((source) => ({
-    ...source,
-    relevanceScore: source.score,
-  }));
+function fallbackEvaluation(sources: RerankedSource[], isBroad: boolean): EvaluationResult {
+  const averageRelevance =
+    sources.reduce((sum, source) => sum + source.relevanceScore, 0) / Math.max(sources.length, 1);
 
   return {
-    sufficientForAnswer: lenient ? sources.length > 0 : sources.some((s) => s.score >= 0.3),
-    qualityScore: sources.reduce((acc, s) => acc + s.score, 0) / Math.max(sources.length, 1),
-    evaluationReason: 'Evaluation parse failed — using raw retrieval scores as fallback.',
+    sufficientForAnswer: isBroad ? sources.length > 0 : sources.some((source) => source.relevanceScore >= 0.4),
+    qualityScore: averageRelevance,
+    evaluationReason: 'Evaluator fallback based on rerank scores.',
     relevantSources: sources,
   };
 }

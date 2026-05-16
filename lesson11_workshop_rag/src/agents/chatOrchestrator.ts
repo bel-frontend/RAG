@@ -3,7 +3,9 @@ import { chatModel } from '../../../common/model';
 import { config } from '../config';
 import type { DialectDictionarySearchTool } from './dialectDictionarySearchTool';
 import type { FolkWisdomSearchTool } from './folkWisdomSearchTool';
+import { LlmReranker } from './llmReranker';
 import { QueryPlannerAgent, fallbackPlan } from './queryPlannerAgent';
+import { QuestionRewriterAgent } from './questionRewriterAgent';
 import { RagResultEvaluator } from './ragResultEvaluator';
 import type { RagSearchAgent } from './ragSearchAgent';
 import {
@@ -15,10 +17,14 @@ import {
   type FinalAnswer,
   type OrchestratorDecision,
   type RagSearchOutput,
+  type RerankTrace,
+  type RerankedSource,
   type SearchPlan,
   type ToolName,
 } from './schemas';
 import { parseStructuredOutput, schemaInstruction } from './json';
+
+const NARROW_MODE_TOP_K = 6;
 
 const DECISION_SYSTEM_PROMPT = [
   'You are the chat orchestrator agent for a RAG workshop.',
@@ -57,23 +63,29 @@ const LIST_FINAL_SYSTEM_PROMPT = [
 
 export class ChatOrchestratorAgent {
   private readonly evaluator = new RagResultEvaluator();
+  private readonly reranker = new LlmReranker();
 
   constructor(
     private readonly ragSearchAgent: RagSearchAgent,
     private readonly folkWisdomSearchTool: FolkWisdomSearchTool,
     private readonly dialectDictionarySearchTool: DialectDictionarySearchTool,
-    private readonly queryPlannerAgent = new QueryPlannerAgent()
+    private readonly queryPlannerAgent = new QueryPlannerAgent(),
+    private readonly questionRewriterAgent = new QuestionRewriterAgent()
   ) {}
 
   async chat(messages: ChatMessage[]): Promise<ChatAgentResponse> {
-    const latestQuestion = latestUserMessage(messages);
-    const decision = requiresDialectDictionaryTool(latestQuestion)
-      ? forcedDialectDictionaryDecision(latestQuestion)
-      : requiresFolkWisdomTool(latestQuestion)
-      ? forcedFolkWisdomDecision(latestQuestion)
-      : requiresDocumentSearch(latestQuestion)
-        ? forcedRagDecision(latestQuestion)
-        : await this.decide(messages, latestQuestion);
+    const originalQuestion = latestUserMessage(messages);
+    const standaloneQuestion = await this.questionRewriterAgent.rewrite(messages, originalQuestion);
+    const effectiveQuestion = standaloneQuestion || originalQuestion;
+    const wasRewritten = standaloneQuestion !== originalQuestion;
+
+    const decision = requiresDialectDictionaryTool(effectiveQuestion)
+      ? forcedDialectDictionaryDecision(effectiveQuestion)
+      : requiresFolkWisdomTool(effectiveQuestion)
+      ? forcedFolkWisdomDecision(effectiveQuestion)
+      : requiresDocumentSearch(effectiveQuestion)
+        ? forcedRagDecision(effectiveQuestion)
+        : await this.decide(messages, effectiveQuestion);
 
     if (decision.action === 'answer_directly') {
       return {
@@ -84,33 +96,29 @@ export class ChatOrchestratorAgent {
           orchestratorDecision: decision,
           usedTool: 'chat',
           citations: [],
+          ...(wasRewritten ? { standaloneQuestion } : {}),
         },
       };
     }
 
-    const searchQuery = decision.searchQuery?.trim() || latestQuestion;
+    const searchQuery = decision.searchQuery?.trim() || effectiveQuestion;
     const usedTool = toolForDecision(decision);
 
     // First search attempt
-    const { searchOutput, searchPlan, evaluation } = await this.searchAndEvaluate(
-      messages, latestQuestion, searchQuery, usedTool
+    const firstAttempt = await this.searchRerankEvaluate(
+      messages, effectiveQuestion, searchQuery, usedTool
     );
 
     // Retry once if evaluator says results are insufficient
-    const finalResult = !evaluation.sufficientForAnswer
-      ? await this.retrySearch(messages, latestQuestion, searchQuery, usedTool, searchOutput, evaluation)
-      : { searchOutput, searchPlan, evaluation };
+    const finalResult = !firstAttempt.evaluation.sufficientForAnswer
+      ? await this.retrySearch(messages, effectiveQuestion, searchQuery, usedTool, firstAttempt)
+      : firstAttempt;
 
     const enforcedPlan = { ...finalResult.searchPlan, tool: usedTool };
     const bestOutput = finalResult.searchOutput;
     const bestEvaluation = finalResult.evaluation;
-
-    const shouldPreserveBroadResults = isBroadResultMode(enforcedPlan);
-    const sourcesForAnswer = shouldPreserveBroadResults
-      ? bestOutput.sources
-      : bestEvaluation.relevantSources.length > 0
-        ? bestEvaluation.relevantSources
-        : bestOutput.sources;
+    const sourcesForAnswer = finalResult.rerankedSources;
+    const rerankTrace = finalResult.rerankTrace;
 
     if (!bestOutput.found || sourcesForAnswer.length === 0) {
       return {
@@ -126,13 +134,15 @@ export class ChatOrchestratorAgent {
           queryBreakdown: bestOutput.queryBreakdown,
           citations: [],
           evaluationResult: bestEvaluation,
+          rerank: rerankTrace,
+          ...(wasRewritten ? { standaloneQuestion } : {}),
         },
       };
     }
 
     const finalAnswer = await this.answerWithContext(
       messages,
-      latestQuestion,
+      effectiveQuestion,
       { ...bestOutput, sources: sourcesForAnswer },
       bestEvaluation,
       usedTool,
@@ -151,16 +161,18 @@ export class ChatOrchestratorAgent {
         queryBreakdown: bestOutput.queryBreakdown,
         citations: finalAnswer.citations,
         evaluationResult: bestEvaluation,
+        rerank: rerankTrace,
+        ...(wasRewritten ? { standaloneQuestion } : {}),
       },
     };
   }
 
-  private async searchAndEvaluate(
+  private async searchRerankEvaluate(
     messages: ChatMessage[],
     latestQuestion: string,
     searchQuery: string,
     usedTool: ToolName
-  ): Promise<{ searchOutput: RagSearchOutput; searchPlan: SearchPlan; evaluation: EvaluationResult }> {
+  ): Promise<SearchRerankResult> {
     const searchPlan =
       usedTool === 'chat'
         ? fallbackPlan(searchQuery, usedTool)
@@ -174,9 +186,22 @@ export class ChatOrchestratorAgent {
         ? await this.folkWisdomSearchTool.invokePlan(enforcedPlan)
         : await this.ragSearchAgent.searchPlan(enforcedPlan);
 
-    const evaluation = await this.evaluator.evaluate(latestQuestion, searchOutput, usedTool, enforcedPlan);
+    const topK = topKForPlan(enforcedPlan);
+    const { rankedSources, trace: rerankTrace } = await this.reranker.rerank({
+      question: latestQuestion,
+      sources: searchOutput.sources,
+      topK,
+    });
 
-    return { searchOutput, searchPlan, evaluation };
+    const evaluation = await this.evaluator.evaluate(latestQuestion, rankedSources, usedTool, enforcedPlan);
+
+    return {
+      searchOutput,
+      searchPlan,
+      rerankedSources: rankedSources,
+      rerankTrace,
+      evaluation,
+    };
   }
 
   private async retrySearch(
@@ -184,18 +209,17 @@ export class ChatOrchestratorAgent {
     latestQuestion: string,
     searchQuery: string,
     usedTool: ToolName,
-    prevOutput: RagSearchOutput,
-    prevEvaluation: EvaluationResult
-  ): Promise<{ searchOutput: RagSearchOutput; searchPlan: SearchPlan; evaluation: EvaluationResult }> {
-    const retryHint = `${searchQuery} — попередній пошук: ${prevEvaluation.evaluationReason}`;
-    const result = await this.searchAndEvaluate(messages, latestQuestion, retryHint, usedTool);
+    previous: SearchRerankResult
+  ): Promise<SearchRerankResult> {
+    const retryHint = `${searchQuery} — папярэдні пошук: ${previous.evaluation.evaluationReason}`;
+    const result = await this.searchRerankEvaluate(messages, latestQuestion, retryHint, usedTool);
 
     // Keep whichever result has a higher quality score
-    if (result.evaluation.qualityScore >= prevEvaluation.qualityScore) {
+    if (result.evaluation.qualityScore >= previous.evaluation.qualityScore) {
       return result;
     }
 
-    return { searchOutput: prevOutput, searchPlan: fallbackPlan(searchQuery, usedTool), evaluation: prevEvaluation };
+    return previous;
   }
 
   private async decide(
@@ -355,8 +379,22 @@ function toolForDecision(decision: OrchestratorDecision): ToolName {
   return 'chat';
 }
 
-function isBroadResultMode(plan: SearchPlan): boolean {
-  return plan.resultMode === 'list' || plan.resultMode === 'section' || plan.resultMode === 'explore';
+interface SearchRerankResult {
+  searchOutput: RagSearchOutput;
+  searchPlan: SearchPlan;
+  rerankedSources: RerankedSource[];
+  rerankTrace: RerankTrace;
+  evaluation: EvaluationResult;
+}
+
+function topKForPlan(plan: SearchPlan): number {
+  if (plan.resultMode === 'list' || plan.resultMode === 'section' || plan.resultMode === 'explore') {
+    if (plan.desiredResultCount) return plan.desiredResultCount;
+    if (plan.resultMode === 'section') return 60;
+    return plan.tool === 'dialect_dictionary_search' ? 40 : 30;
+  }
+
+  return NARROW_MODE_TOP_K;
 }
 
 function requiresDialectDictionaryTool(question: string): boolean {

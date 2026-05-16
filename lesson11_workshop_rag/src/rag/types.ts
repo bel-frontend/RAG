@@ -5,6 +5,8 @@ export interface RetrievedSource {
   fileName?: string;
   page?: number;
   matchedQueries?: string[];
+  vectorRank?: number;
+  lexicalRank?: number;
 }
 
 export interface RagAnswer {

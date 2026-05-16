@@ -14,6 +14,8 @@ export const RetrievedSourceSchema = z.object({
   fileName: z.string().optional(),
   page: z.number().optional(),
   matchedQueries: z.array(z.string()).optional(),
+  vectorRank: z.number().optional(),
+  lexicalRank: z.number().optional(),
 });
 
 export const OrchestratorDecisionSchema = z.object({
@@ -85,6 +87,18 @@ export const EvaluationResultSchema = z.object({
   relevantSources: z.array(EvaluatedSourceSchema),
 });
 
+export const RerankedSourceSchema = EvaluatedSourceSchema;
+
+export const RerankResultSchema = z.object({
+  ranked: z.array(
+    z.object({
+      id: z.number().int().min(1),
+      relevanceScore: z.number().min(0).max(1),
+      reason: z.string().optional(),
+    })
+  ),
+});
+
 export const EvaluatedRagOutputSchema = RagSearchOutputSchema.extend({
   evaluation: EvaluationResultSchema.optional(),
 });
@@ -101,10 +115,18 @@ export type ResultMode = z.infer<typeof ResultModeSchema>;
 export type SearchPlan = z.infer<typeof SearchPlanSchema>;
 export type RagSearchOutput = z.infer<typeof RagSearchOutputSchema>;
 export type EvaluatedSource = z.infer<typeof EvaluatedSourceSchema>;
+export type RerankedSource = z.infer<typeof RerankedSourceSchema>;
+export type RerankResult = z.infer<typeof RerankResultSchema>;
 export type EvaluationResult = z.infer<typeof EvaluationResultSchema>;
 export type EvaluatedRagOutput = z.infer<typeof EvaluatedRagOutputSchema>;
 export type FinalAnswer = z.infer<typeof FinalAnswerSchema>;
 export type ChatRequestInput = z.infer<typeof ChatRequestSchema>;
+
+export interface RerankTrace {
+  inputCount: number;
+  outputCount: number;
+  modelLatencyMs: number;
+}
 
 export interface ChatAgentResponse {
   answer: string;
@@ -118,5 +140,7 @@ export interface ChatAgentResponse {
     queryBreakdown?: z.infer<typeof QueryBreakdownSchema>[];
     citations: string[];
     evaluationResult?: EvaluationResult;
+    standaloneQuestion?: string;
+    rerank?: RerankTrace;
   };
 }
