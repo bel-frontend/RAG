@@ -4,6 +4,7 @@ export interface RetrievedSource {
   source?: string;
   fileName?: string;
   page?: number;
+  matchedQueries?: string[];
 }
 
 export interface RagAnswer {

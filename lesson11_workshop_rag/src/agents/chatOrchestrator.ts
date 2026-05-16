@@ -15,6 +15,7 @@ import {
   type FinalAnswer,
   type OrchestratorDecision,
   type RagSearchOutput,
+  type SearchPlan,
   type ToolName,
 } from './schemas';
 import { parseStructuredOutput, schemaInstruction } from './json';
@@ -48,6 +49,8 @@ const LIST_FINAL_SYSTEM_PROMPT = [
   'present EVERY found item as a numbered list: "1. ...", "2. ...", etc.',
   'Each list item must be on its own line.',
   'Do not merge, summarise, or paraphrase individual proverbs or dictionary entries — quote them exactly from the context.',
+  'When the context contains many distinct relevant items, preserve breadth: include every distinct found item that answers the request.',
+  'If the search appears partial, say briefly that these are the found items, not a guaranteed complete collection.',
   'After the list you may add a short concluding sentence if useful.',
   'If context is missing or insufficient, say that the documents do not contain enough data.',
 ].join(' ');
@@ -102,10 +105,12 @@ export class ChatOrchestratorAgent {
     const bestOutput = finalResult.searchOutput;
     const bestEvaluation = finalResult.evaluation;
 
-    // Use evaluator-filtered sources; fall back to raw sources if evaluator returned none
-    const sourcesForAnswer = bestEvaluation.relevantSources.length > 0
-      ? bestEvaluation.relevantSources
-      : bestOutput.sources;
+    const shouldPreserveBroadResults = isBroadResultMode(enforcedPlan);
+    const sourcesForAnswer = shouldPreserveBroadResults
+      ? bestOutput.sources
+      : bestEvaluation.relevantSources.length > 0
+        ? bestEvaluation.relevantSources
+        : bestOutput.sources;
 
     if (!bestOutput.found || sourcesForAnswer.length === 0) {
       return {
@@ -118,6 +123,7 @@ export class ChatOrchestratorAgent {
           orchestratorDecision: decision,
           usedTool,
           searchPlan: enforcedPlan,
+          queryBreakdown: bestOutput.queryBreakdown,
           citations: [],
           evaluationResult: bestEvaluation,
         },
@@ -129,7 +135,8 @@ export class ChatOrchestratorAgent {
       latestQuestion,
       { ...bestOutput, sources: sourcesForAnswer },
       bestEvaluation,
-      usedTool
+      usedTool,
+      enforcedPlan
     );
 
     return {
@@ -141,6 +148,7 @@ export class ChatOrchestratorAgent {
         orchestratorDecision: decision,
         usedTool,
         searchPlan: enforcedPlan,
+        queryBreakdown: bestOutput.queryBreakdown,
         citations: finalAnswer.citations,
         evaluationResult: bestEvaluation,
       },
@@ -152,7 +160,7 @@ export class ChatOrchestratorAgent {
     latestQuestion: string,
     searchQuery: string,
     usedTool: ToolName
-  ): Promise<{ searchOutput: RagSearchOutput; searchPlan: ReturnType<typeof fallbackPlan>; evaluation: EvaluationResult }> {
+  ): Promise<{ searchOutput: RagSearchOutput; searchPlan: SearchPlan; evaluation: EvaluationResult }> {
     const searchPlan =
       usedTool === 'chat'
         ? fallbackPlan(searchQuery, usedTool)
@@ -166,7 +174,7 @@ export class ChatOrchestratorAgent {
         ? await this.folkWisdomSearchTool.invokePlan(enforcedPlan)
         : await this.ragSearchAgent.searchPlan(enforcedPlan);
 
-    const evaluation = await this.evaluator.evaluate(latestQuestion, searchOutput, usedTool);
+    const evaluation = await this.evaluator.evaluate(latestQuestion, searchOutput, usedTool, enforcedPlan);
 
     return { searchOutput, searchPlan, evaluation };
   }
@@ -178,7 +186,7 @@ export class ChatOrchestratorAgent {
     usedTool: ToolName,
     prevOutput: RagSearchOutput,
     prevEvaluation: EvaluationResult
-  ): Promise<{ searchOutput: RagSearchOutput; searchPlan: ReturnType<typeof fallbackPlan>; evaluation: EvaluationResult }> {
+  ): Promise<{ searchOutput: RagSearchOutput; searchPlan: SearchPlan; evaluation: EvaluationResult }> {
     const retryHint = `${searchQuery} — попередній пошук: ${prevEvaluation.evaluationReason}`;
     const result = await this.searchAndEvaluate(messages, latestQuestion, retryHint, usedTool);
 
@@ -226,7 +234,8 @@ export class ChatOrchestratorAgent {
     latestQuestion: string,
     searchOutput: RagSearchOutput,
     evaluation: EvaluationResult,
-    usedTool: ToolName
+    usedTool: ToolName,
+    searchPlan: SearchPlan
   ): Promise<FinalAnswer> {
     const isListTool = usedTool === 'folk_wisdom_search' || usedTool === 'dialect_dictionary_search';
     const systemPrompt = isListTool ? LIST_FINAL_SYSTEM_PROMPT : FINAL_SYSTEM_PROMPT;
@@ -248,15 +257,19 @@ export class ChatOrchestratorAgent {
           latestQuestion,
           evaluationQualityScore: evaluation.qualityScore,
           evaluationSufficient: evaluation.sufficientForAnswer,
+          resultMode: searchPlan.resultMode,
+          semanticFacets: searchPlan.semanticFacets,
           ragSearch: {
             query: searchOutput.query,
             found: searchOutput.found,
+            queryBreakdown: searchOutput.queryBreakdown || [],
             sources: searchOutput.sources.map((source, index) => ({
               id: index + 1,
               fileName: source.fileName,
               page: source.page,
               score: source.score,
               relevanceScore: 'relevanceScore' in source ? (source as { relevanceScore: number }).relevanceScore : source.score,
+              matchedQueries: source.matchedQueries || [],
               text: source.text,
             })),
           },
@@ -340,6 +353,10 @@ function toolForDecision(decision: OrchestratorDecision): ToolName {
   if (decision.action === 'search_folk_wisdom') return 'folk_wisdom_search';
   if (decision.action === 'search_rag') return 'rag_search';
   return 'chat';
+}
+
+function isBroadResultMode(plan: SearchPlan): boolean {
+  return plan.resultMode === 'list' || plan.resultMode === 'section' || plan.resultMode === 'explore';
 }
 
 function requiresDialectDictionaryTool(question: string): boolean {

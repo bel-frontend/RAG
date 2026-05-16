@@ -6,6 +6,7 @@ import {
   EvaluationResultSchema,
   type EvaluationResult,
   type RagSearchOutput,
+  type SearchPlan,
   type ToolName,
 } from './schemas';
 
@@ -27,9 +28,10 @@ const LENIENT_EVALUATOR_SYSTEM_PROMPT = [
   'You are a RAG retrieval evaluator for a collection of short text entries (proverbs, dictionary entries, folk wisdom).',
   'Each chunk may be a standalone short entry — evaluate the collection as a whole, not individual entries.',
   'Assign a relevanceScore from 0.0 to 1.0 for each chunk.',
+  'For list, section, or explore requests, prefer broad topical coverage and variety over a tiny set of perfect matches.',
   'Set sufficientForAnswer to true if at least some chunks are topically related to the question.',
-  'Set qualityScore to the average relevanceScore of chunks with score >= 0.2.',
-  'Include in relevantSources all chunks with relevanceScore >= 0.2.',
+  'Set qualityScore to the average relevanceScore of chunks with score >= 0.15.',
+  'Include in relevantSources all chunks with relevanceScore >= 0.15.',
   'Set sufficientForAnswer to false only if zero chunks relate to the question topic.',
 ].join(' ');
 
@@ -37,7 +39,8 @@ export class RagResultEvaluator {
   async evaluate(
     question: string,
     searchOutput: RagSearchOutput,
-    tool: ToolName
+    tool: ToolName,
+    plan?: SearchPlan
   ): Promise<EvaluationResult> {
     if (!searchOutput.found || searchOutput.sources.length === 0) {
       return emptyEvaluation('No sources retrieved.');
@@ -47,7 +50,11 @@ export class RagResultEvaluator {
       ollamaUrl: config.chat.ollamaUrl,
     });
 
-    const isLenient = tool === 'folk_wisdom_search' || tool === 'dialect_dictionary_search';
+    const isLenient = tool === 'folk_wisdom_search'
+      || tool === 'dialect_dictionary_search'
+      || plan?.resultMode === 'list'
+      || plan?.resultMode === 'section'
+      || plan?.resultMode === 'explore';
     const systemPrompt = isLenient ? LENIENT_EVALUATOR_SYSTEM_PROMPT : EVALUATOR_SYSTEM_PROMPT;
 
     const response = await model.invoke([
@@ -61,11 +68,15 @@ export class RagResultEvaluator {
       new HumanMessage(
         JSON.stringify({
           question,
+          resultMode: plan?.resultMode || 'answer',
+          desiredResultCount: plan?.desiredResultCount,
+          semanticFacets: plan?.semanticFacets || [],
           retrievedSources: searchOutput.sources.map((source, index) => ({
             id: index + 1,
             fileName: source.fileName,
             page: source.page,
             score: source.score,
+            matchedQueries: source.matchedQueries || [],
             text: source.text.slice(0, 600),
           })),
         })
