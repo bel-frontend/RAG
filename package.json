@@ -7,6 +7,7 @@
         "@langchain/community": "^0.3.42",
         "@langchain/core": "^0.3.50",
         "@langchain/langgraph": "^0.2.67",
+        "@langchain/google-genai": "^0.2.18",
         "@langchain/ollama": "^0.2.0",
         "@langchain/openai": "^0.5.10",
         "ansi-styles": "^5.2.0",
