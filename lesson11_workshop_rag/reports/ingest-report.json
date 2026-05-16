@@ -1,0 +1,28 @@
+{
+  "startedAt": "2026-05-16T17:23:35.919Z",
+  "finishedAt": "2026-05-16T17:25:21.599Z",
+  "collection": "lesson11_pdf_documents",
+  "pdfDir": "/Users/serj/projects/lessons/RAG/lesson11_workshop_rag/pdf_documents",
+  "filesTotal": 2,
+  "filesInserted": 2,
+  "filesFailed": 0,
+  "pagesLoaded": 737,
+  "chunksPrepared": 3502,
+  "pointsInserted": 3502,
+  "files": [
+    {
+      "fileName": "Vusacki_slovazbor_Ryhora_Baradulina_2013.ocr.pdf",
+      "status": "inserted",
+      "pagesLoaded": 387,
+      "chunksPrepared": 1090,
+      "pointsInserted": 1090
+    },
+    {
+      "fileName": "слоўнік_прыказак.pdf",
+      "status": "inserted",
+      "pagesLoaded": 350,
+      "chunksPrepared": 2412,
+      "pointsInserted": 2412
+    }
+  ]
+}

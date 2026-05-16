@@ -1,0 +1,107 @@
+import { z } from 'zod';
+
+export const ChatRoleSchema = z.enum(['user', 'assistant']);
+
+export const ChatMessageSchema = z.object({
+  role: ChatRoleSchema,
+  content: z.string().min(1),
+});
+
+export const RetrievedSourceSchema = z.object({
+  text: z.string(),
+  score: z.number(),
+  source: z.string().optional(),
+  fileName: z.string().optional(),
+  page: z.number().optional(),
+});
+
+export const OrchestratorDecisionSchema = z.object({
+  action: z.enum(['answer_directly', 'search_rag', 'search_folk_wisdom', 'search_dialect_dictionary']),
+  searchQuery: z.string().optional(),
+  directAnswer: z.string().optional(),
+  reason: z.string(),
+});
+
+export const ToolNameSchema = z.enum([
+  'chat',
+  'rag_search',
+  'folk_wisdom_search',
+  'dialect_dictionary_search',
+]);
+
+export const SearchIntentSchema = z.enum([
+  'direct_chat',
+  'general_rag',
+  'folk_wisdom',
+  'dialect_definition',
+  'dialect_section_lookup',
+  'exact_phrase',
+]);
+
+export const SearchPlanSchema = z.object({
+  intent: SearchIntentSchema,
+  coreQuery: z.string(),
+  expandedQueries: z.array(z.string()).min(1),
+  targetBook: z.enum(['any', 'vushatski_slovazbor', 'proverbs_dictionary']),
+  tool: ToolNameSchema,
+  reason: z.string(),
+});
+
+export const RagSearchOutputSchema = z.object({
+  query: z.string(),
+  found: z.boolean(),
+  sources: z.array(RetrievedSourceSchema),
+  sourceCount: z.number(),
+});
+
+export const FinalAnswerSchema = z.object({
+  answer: z.string(),
+  usedRag: z.boolean(),
+  citations: z.array(z.string()),
+});
+
+export const EvaluatedSourceSchema = RetrievedSourceSchema.extend({
+  relevanceScore: z.number().min(0).max(1),
+  relevanceReason: z.string().optional(),
+});
+
+export const EvaluationResultSchema = z.object({
+  sufficientForAnswer: z.boolean(),
+  qualityScore: z.number().min(0).max(1),
+  evaluationReason: z.string(),
+  relevantSources: z.array(EvaluatedSourceSchema),
+});
+
+export const EvaluatedRagOutputSchema = RagSearchOutputSchema.extend({
+  evaluation: EvaluationResultSchema.optional(),
+});
+
+export const ChatRequestSchema = z.object({
+  question: z.string().min(1).optional(),
+  messages: z.array(ChatMessageSchema).optional(),
+});
+
+export type ChatMessage = z.infer<typeof ChatMessageSchema>;
+export type OrchestratorDecision = z.infer<typeof OrchestratorDecisionSchema>;
+export type ToolName = z.infer<typeof ToolNameSchema>;
+export type SearchPlan = z.infer<typeof SearchPlanSchema>;
+export type RagSearchOutput = z.infer<typeof RagSearchOutputSchema>;
+export type EvaluatedSource = z.infer<typeof EvaluatedSourceSchema>;
+export type EvaluationResult = z.infer<typeof EvaluationResultSchema>;
+export type EvaluatedRagOutput = z.infer<typeof EvaluatedRagOutputSchema>;
+export type FinalAnswer = z.infer<typeof FinalAnswerSchema>;
+export type ChatRequestInput = z.infer<typeof ChatRequestSchema>;
+
+export interface ChatAgentResponse {
+  answer: string;
+  usedRag: boolean;
+  searchQuery?: string;
+  sources: z.infer<typeof RetrievedSourceSchema>[];
+  trace: {
+    orchestratorDecision: OrchestratorDecision;
+    usedTool: ToolName;
+    searchPlan?: SearchPlan;
+    citations: string[];
+    evaluationResult?: EvaluationResult;
+  };
+}

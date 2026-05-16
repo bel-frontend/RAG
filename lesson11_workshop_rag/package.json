@@ -1,0 +1,41 @@
+{
+  "name": "lesson11_workshop_rag",
+  "version": "1.0.0",
+  "description": "Workshop: PDF documents to RAG with Qdrant, LangChain, Bun and React chat",
+  "type": "module",
+  "scripts": {
+    "ingest": "bun run src/ingest.ts",
+    "ocr:pdf": "bun run src/ocr-pdf.ts",
+    "pdf:diagnostics": "bun run src/pdf-diagnostics.ts",
+    "rag:status": "bun run src/rag-status.ts",
+    "search": "bun run src/debug-search.ts",
+    "server": "bun run src/server.ts",
+    "chat": "bun run server",
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@langchain/community": "^0.3.42",
+    "@langchain/core": "^0.3.50",
+    "@langchain/google-genai": "^0.2.18",
+    "@langchain/ollama": "^0.2.0",
+    "@langchain/openai": "^0.5.10",
+    "@vitejs/plugin-react": "^4.5.0",
+    "dotenv": "^16.5.0",
+    "langchain": "^0.3.24",
+    "pdf-parse": "^1.1.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "uuid": "^11.1.0",
+    "vite": "^6.3.5",
+    "zod": "^3.25.58"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.13",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.8.3"
+  }
+}
