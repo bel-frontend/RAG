@@ -9,16 +9,16 @@
  * - Захаванне структуры і код-блокаў
  *
  * Выкарыстанне:
- *   bun run md-v2 <файл.md> [--mode=grammar|style|full] [--parallel]
+ *   bun run start <файл.md> [--mode=grammar|style|full] [--parallel]
  */
 
 import { StateGraph, Annotation } from '@langchain/langgraph';
 import { chatModel, Model } from '../common/model';
 import { config } from 'dotenv';
 import { resolve, basename, dirname, join } from 'path';
-import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 
-config({ path: resolve(__dirname, '../.env') });
+config({ path: resolve(import.meta.dir, '.env') });
 
 // ============================================
 // 📋 Тыпы і канстанты
@@ -44,6 +44,7 @@ interface ChunkResult {
 
 const CHUNK_SIZE = 3000; // Максімальны памер чанка ў сімвалах
 const MAX_PARALLEL = 2; // Максімум паралельных запытаў (2 для стабільнасці)
+const MAX_ITERATIONS = 2; // Абмежаванне, каб граф не сышоў у бясконцы цыкл
 
 // ============================================
 // 📊 Стан
@@ -98,7 +99,7 @@ const MDReviewState = Annotation.Root({
 
 type MDReviewStateType = typeof MDReviewState.State;
 
-const model = await chatModel(Model.GPT4o);
+const model = await chatModel(Model.GPT5_1_NANO);
 
 // ============================================
 // 🔧 Утыліты
@@ -445,12 +446,10 @@ async function reviewerNode(
 
     // Збіраем статыстыку
     const allIssues = results.flatMap((r) => r.issues);
-    const avgScore =
-        results.reduce((sum, r) => sum + r.score, 0) / results.length;
-    const score = Math.round(avgScore);
-
-    // Аб'ядноўваем выпраўлены кантэнт
     const newContent = mergeChunks(results);
+    const changed = newContent !== state.currentContent;
+    const approved = !changed || iter >= MAX_ITERATIONS;
+    const score = approved ? 10 : 7;
 
     // Фармуем зваротную сувязь
     const feedback =
@@ -463,12 +462,14 @@ async function reviewerNode(
                   )}${allIssues.length > 10 ? `\n... і яшчэ ${allIssues.length - 10}` : ''}`
             : 'Праблем не знойдзена';
 
-    const approved = score >= 8 || allIssues.length === 0;
-
     console.log(`\n⏱️  Час: ${duration} сек`);
     console.log(`📊 Сярэдняя ацэнка: ${score}/10`);
     console.log(`⚠️  Праблем: ${allIssues.length}`);
-    console.log(approved ? '✅ ЗАЦВЕРДЖАНА' : '🔄 Патрабуе яшчэ ітэрацыі');
+    console.log(
+        approved
+            ? '✅ ЗАЦВЕРДЖАНА'
+            : '🔄 Тэкст змяніўся, запускаем кантрольны праход'
+    );
 
     if (allIssues.length > 0) {
         console.log(`\n💬 Асноўныя праблемы:`);
@@ -477,6 +478,7 @@ async function reviewerNode(
 
     return {
         currentContent: newContent,
+        chunks: splitIntoChunks(newContent),
         chunkResults: results,
         feedback,
         score,
@@ -496,18 +498,15 @@ async function finalizerNode(
 }
 
 function shouldContinue(state: MDReviewStateType): 'reviewer' | 'finalizer' {
-    const maxIterations = 2;
-
     if (state.approved) {
         return 'finalizer';
     }
 
-    if (state.iteration >= maxIterations) {
-        console.log(`\n⚠️ Дасягнуты максімум ітэрацый (${maxIterations})`);
+    if (state.iteration >= MAX_ITERATIONS) {
+        console.log(`\n⚠️ Дасягнуты максімум ітэрацый (${MAX_ITERATIONS})`);
         return 'finalizer';
     }
 
-    // Абнаўляем чанкі з выпраўленым кантэнтам
     return 'reviewer';
 }
 
@@ -667,7 +666,7 @@ function showHelp() {
 📄 MD-Рэцэнзент v2 - праверка Markdown файлаў
 
 Выкарыстанне:
-  bun run md-reviewer-v2.ts <файл.md> [опцыі]
+  bun run start <файл.md> [опцыі]
 
 Опцыі:
   --mode=<рэжым>    Рэжым праверкі:
@@ -678,9 +677,9 @@ function showHelp() {
   --parallel, -p    Паралельная апрацоўка (хутчэй для вялікіх файлаў)
 
 Прыклады:
-  bun run md-v2 README.md
-  bun run md-v2 doc.md --mode=grammar
-  bun run md-v2 large-doc.md --mode=full --parallel
+  bun run start README.md
+  bun run start doc.md --mode=grammar
+  bun run review large-doc.md --mode=full --parallel
 
 Вынік:
   Файл захоўваецца як <імя>_<рэжым>.md:
