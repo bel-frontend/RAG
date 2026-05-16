@@ -42,6 +42,16 @@ interface ChunkResult {
     issues: string[];
 }
 
+interface ChangeLogEntry {
+    iteration: number;
+    chunkId: number;
+    startLine: number;
+    endLine: number;
+    original: string;
+    reviewed: string;
+    summary: string[];
+}
+
 const CHUNK_SIZE = 3000; // Максімальны памер чанка ў сімвалах
 const MAX_PARALLEL = 2; // Максімум паралельных запытаў (2 для стабільнасці)
 const MAX_ITERATIONS = 2; // Абмежаванне, каб граф не сышоў у бясконцы цыкл
@@ -79,6 +89,10 @@ const MDReviewState = Annotation.Root({
         reducer: (_, update) => update, // Замяняем, а не накапляем
         default: () => [],
     }),
+    changeLog: Annotation<ChangeLogEntry[]>({
+        reducer: (current, update) => current.concat(update),
+        default: () => [],
+    }),
     feedback: Annotation<string>({
         reducer: (_, update) => update,
         default: () => '',
@@ -99,7 +113,7 @@ const MDReviewState = Annotation.Root({
 
 type MDReviewStateType = typeof MDReviewState.State;
 
-const model = await chatModel(Model.GPT5_1_NANO);
+const model = await chatModel(Model.GPT5_NANO);
 
 // ============================================
 // 🔧 Утыліты
@@ -256,6 +270,56 @@ function mergeChunks(results: ChunkResult[]): string {
     }
 
     return merged.trim();
+}
+
+function summarizeChanges(original: string, reviewed: string): string[] {
+    const summary: string[] = [];
+    const originalLines = original.split('\n');
+    const reviewedLines = reviewed.split('\n');
+
+    if (original === reviewed) {
+        return summary;
+    }
+
+    if (original.replace(/\s+/g, ' ') === reviewed.replace(/\s+/g, ' ')) {
+        summary.push('Выпраўлены прабелы і пераносы радкоў без змены сэнсу.');
+    }
+
+    if (stripPunctuation(original) === stripPunctuation(reviewed)) {
+        summary.push('Удакладнена пунктуацыя.');
+    }
+
+    if (original.replace(/-/g, '—') !== reviewed.replace(/-/g, '—')) {
+        summary.push('Адрэдагаваны злучкі або працяжнікі.');
+    }
+
+    if (original.toLowerCase() === reviewed.toLowerCase()) {
+        summary.push('Выпраўлены рэгістр літар.');
+    }
+
+    if (countMarkdownMarkers(original) !== countMarkdownMarkers(reviewed)) {
+        summary.push('Зменена Markdown-фарматаванне.');
+    }
+
+    if (originalLines.length !== reviewedLines.length) {
+        summary.push('Зменена структура радкоў або абзацаў.');
+    }
+
+    if (summary.length === 0) {
+        summary.push(
+            'Унесены моўныя або стылістычныя праўкі для лепшай чытальнасці.'
+        );
+    }
+
+    return Array.from(new Set(summary));
+}
+
+function stripPunctuation(text: string): string {
+    return text.replace(/[.,!?;:()[\]'"«»“”‘’—-]/g, '').replace(/\s+/g, ' ');
+}
+
+function countMarkdownMarkers(text: string): number {
+    return (text.match(/[#*_`[\]()>|-]/g) || []).length;
 }
 
 // ============================================
@@ -450,6 +514,21 @@ async function reviewerNode(
     const changed = newContent !== state.currentContent;
     const approved = !changed || iter >= MAX_ITERATIONS;
     const score = approved ? 10 : 7;
+    const changeLog = results
+        .filter((result) => result.original !== result.reviewed)
+        .map((result) => {
+            const chunk = state.chunks.find((item) => item.id === result.id);
+
+            return {
+                iteration: iter,
+                chunkId: result.id,
+                startLine: chunk?.startLine ?? 0,
+                endLine: chunk?.endLine ?? 0,
+                original: result.original,
+                reviewed: result.reviewed,
+                summary: summarizeChanges(result.original, result.reviewed),
+            };
+        });
 
     // Фармуем зваротную сувязь
     const feedback =
@@ -480,6 +559,7 @@ async function reviewerNode(
         currentContent: newContent,
         chunks: splitIntoChunks(newContent),
         chunkResults: results,
+        changeLog,
         feedback,
         score,
         approved,
@@ -561,6 +641,68 @@ function writeMDFile(
     return outputPath;
 }
 
+function writeChangeReport(
+    originalPath: string,
+    entries: ChangeLogEntry[],
+    mode: ReviewMode
+): string {
+    const dir = dirname(originalPath);
+    const name = basename(originalPath, '.md');
+    const suffix = mode === 'full' ? 'reviewed' : mode;
+    const outputPath = join(dir, `${name}_${suffix}_changes.md`);
+    const report = formatChangeReport(originalPath, entries, mode);
+
+    writeFileSync(outputPath, report, 'utf-8');
+    return outputPath;
+}
+
+function formatChangeReport(
+    originalPath: string,
+    entries: ChangeLogEntry[],
+    mode: ReviewMode
+): string {
+    const lines = [
+        `# Справаздача пра выпраўленні`,
+        '',
+        `- Файл: \`${originalPath}\``,
+        `- Рэжым: ${getModeName(mode)}`,
+        `- Змененых чанкаў: ${entries.length}`,
+        '',
+    ];
+
+    if (entries.length === 0) {
+        lines.push('Зменаў не знойдзена.', '');
+        return lines.join('\n');
+    }
+
+    for (const entry of entries) {
+        lines.push(
+            `## Ітэрацыя ${entry.iteration}, чанк ${entry.chunkId + 1}`,
+            '',
+            `Радкі: ${entry.startLine + 1}-${entry.endLine + 1}`,
+            '',
+            `### Што і чаму змянілася`,
+            '',
+            ...entry.summary.map((item) => `- ${item}`),
+            '',
+            `### Было`,
+            '',
+            '```markdown',
+            entry.original,
+            '```',
+            '',
+            `### Стала`,
+            '',
+            '```markdown',
+            entry.reviewed,
+            '```',
+            ''
+        );
+    }
+
+    return lines.join('\n');
+}
+
 // ============================================
 // 🚀 Галоўная функцыя
 // ============================================
@@ -605,10 +747,16 @@ async function reviewMDFile(
 
     // Захоўваем
     let outputPath = '';
+    let reportPath = '';
     if (result.currentContent !== content) {
         outputPath = writeMDFile(
             absolutePath,
             result.currentContent,
+            options.mode
+        );
+        reportPath = writeChangeReport(
+            absolutePath,
+            result.changeLog,
             options.mode
         );
     }
@@ -625,6 +773,7 @@ async function reviewMDFile(
 
     if (outputPath) {
         console.log(`\n📁 Вынік: ${outputPath}`);
+        console.log(`🧾 Справаздача: ${reportPath}`);
     } else {
         console.log(`\n✨ Файл не патрабуе выпраўленняў`);
     }

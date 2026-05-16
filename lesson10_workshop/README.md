@@ -206,12 +206,15 @@ const MDReviewState = Annotation.Root({
 
 ### Фармат вываду
 
-Выпраўлены файл захоўваецца побач з арыгіналам:
+Выпраўлены файл і справаздача пра змены захоўваюцца побач з арыгіналам:
 
 ```
 document.md → document_grammar.md   (--mode=grammar)
+document.md → document_grammar_changes.md
 document.md → document_style.md     (--mode=style)
+document.md → document_style_changes.md
 document.md → document_reviewed.md  (--mode=full)
+document.md → document_reviewed_changes.md
 ```
 
 ### Прыклад вываду ў кансоль
@@ -250,6 +253,7 @@ document.md → document_reviewed.md  (--mode=full)
 📊 Фінальная ацэнка: 10/10
 
 📁 Вынік: /path/to/README_grammar.md
+🧾 Справаздача: /path/to/README_grammar_changes.md
 ```
 
 ---
@@ -265,7 +269,7 @@ document.md → document_reviewed.md  (--mode=full)
 
 ### 2. Праверка чанкаў
 
-Кожны тэкставы чанк адпраўляецца ў `gpt-5.1-nano` з інструкцыяй:
+Кожны тэкставы чанк адпраўляецца ў `gpt-5-nano` з інструкцыяй:
 - Выправіць памылкі згодна з рэжымам
 - Вярнуць ТОЛЬКІ выпраўлены тэкст
 - Захаваць Markdown фарматаванне
@@ -322,9 +326,9 @@ technical: `Правер тэхнічную дакладнасць:
 
 У пачатку файла:
 ```typescript
-const model = await chatModel(Model.GPT5_1_NANO);
+const model = await chatModel(Model.GPT5_NANO);
 // Прыклад замены, калі патрэбна мацнейшая мадэль:
-const model = await chatModel(Model.GPT5_1_MINI);
+const model = await chatModel(Model.GPT5_4_MINI);
 ```
 
 ---
@@ -367,7 +371,7 @@ done
 
 ### Колькі каштуе выкарыстанне?
 
-Кошт залежыць ад актуальных тарыфаў OpenAI, памеру дакумента, колькасці ітэрацый і абранай мадэлі. Для воркшопа па змаўчанні выкарыстоўваецца `gpt-5.1-nano`, таму яго варта лічыць базавым танным варыянтам для частых запускаў на невялікіх Markdown-файлах.
+Кошт залежыць ад актуальных тарыфаў OpenAI, памеру дакумента, колькасці ітэрацый і абранай мадэлі. Для воркшопа па змаўчанні выкарыстоўваецца `gpt-5-nano`, таму яго варта лічыць базавым танным варыянтам для частых запускаў на невялікіх Markdown-файлах.
 
 ### Ці можна выкарыстоўваць для іншых моў?
 

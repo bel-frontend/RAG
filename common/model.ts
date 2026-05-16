@@ -12,14 +12,15 @@ export enum Model {
     GPT4o = 'gpt-4o',
     GPT4o_MINI = 'gpt-4o-mini',
     GPT4o_mini = 'gpt-4o-mini',
-    GPT4_1 = 'gpt-4.1-2025-04-14',
+    GPT4_1 = 'gpt-4.1',
+    GPT4_1_MINI = 'gpt-4.1-mini',
     GPT4_1_NANO = 'gpt-4.1-nano',
+    GPT5_5 = 'gpt-5.5',
     GPT5 = 'gpt-5',
     GPT5_MINI = 'gpt-5-mini',
     GPT5_NANO = 'gpt-5-nano',
     GPT5_1 = 'gpt-5.1',
-    GPT5_1_MINI = 'gpt-5.1-mini',
-    GPT5_1_NANO = 'gpt-5.1-nano',
+    GPT5_2 = 'gpt-5.2',
     GPT5_4 = 'gpt-5.4',
     GPT5_4_MINI = 'gpt-5.4-mini',
     GPT5_4_NANO = 'gpt-5.4-nano',
@@ -70,6 +71,13 @@ export async function chatModel(
         case Model.GPT4o:
             chatModelInstance = openAIModel(Model.GPT4o, openAIKey);
             break;
+        case Model.GPT5_5:
+            chatModelInstance = openAIModel(Model.GPT5_5, openAIKey, {
+                temperature: 1,
+                useResponsesApi: true,
+                reasoning: { effort: 'low' },
+            });
+            break;
         case Model.GPT5:
             chatModelInstance = openAIModel(Model.GPT5, openAIKey, {
                 temperature: 1,
@@ -115,6 +123,9 @@ export async function chatModel(
         case Model.GPT4_1:
             chatModelInstance = openAIModel(Model.GPT4_1, openAIKey);
             break;
+        case Model.GPT4_1_MINI:
+            chatModelInstance = openAIModel(Model.GPT4_1_MINI, openAIKey);
+            break;
         case Model.GPT4_1_NANO:
             chatModelInstance = openAIModel(Model.GPT4_1_NANO, openAIKey);
             break;
@@ -143,15 +154,8 @@ export async function chatModel(
                 reasoning: { effort: 'low' },
             });
             break;
-        case Model.GPT5_1_MINI:
-            chatModelInstance = openAIModel(Model.GPT5_1_MINI, openAIKey, {
-                temperature: 1,
-                useResponsesApi: true,
-                reasoning: { effort: 'low' },
-            });
-            break;
-        case Model.GPT5_1_NANO:
-            chatModelInstance = openAIModel(Model.GPT5_1_NANO, openAIKey, {
+        case Model.GPT5_2:
+            chatModelInstance = openAIModel(Model.GPT5_2, openAIKey, {
                 temperature: 1,
                 useResponsesApi: true,
                 reasoning: { effort: 'low' },
