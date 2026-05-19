@@ -13,6 +13,9 @@ export const RetrievedSourceSchema = z.object({
   source: z.string().optional(),
   fileName: z.string().optional(),
   page: z.number().optional(),
+  matchedQueries: z.array(z.string()).optional(),
+  vectorRank: z.number().optional(),
+  lexicalRank: z.number().optional(),
 });
 
 export const OrchestratorDecisionSchema = z.object({
@@ -38,13 +41,24 @@ export const SearchIntentSchema = z.enum([
   'exact_phrase',
 ]);
 
+export const ResultModeSchema = z.enum(['answer', 'list', 'section', 'explore']);
+
 export const SearchPlanSchema = z.object({
   intent: SearchIntentSchema,
   coreQuery: z.string(),
   expandedQueries: z.array(z.string()).min(1),
+  semanticFacets: z.array(z.string()).optional(),
+  resultMode: ResultModeSchema.default('answer'),
+  desiredResultCount: z.number().int().min(1).max(80).optional(),
   targetBook: z.enum(['any', 'vushatski_slovazbor', 'proverbs_dictionary']),
   tool: ToolNameSchema,
   reason: z.string(),
+});
+
+export const QueryBreakdownSchema = z.object({
+  query: z.string(),
+  retrievedCount: z.number(),
+  keptCount: z.number(),
 });
 
 export const RagSearchOutputSchema = z.object({
@@ -52,6 +66,7 @@ export const RagSearchOutputSchema = z.object({
   found: z.boolean(),
   sources: z.array(RetrievedSourceSchema),
   sourceCount: z.number(),
+  queryBreakdown: z.array(QueryBreakdownSchema).optional(),
 });
 
 export const FinalAnswerSchema = z.object({
@@ -72,6 +87,18 @@ export const EvaluationResultSchema = z.object({
   relevantSources: z.array(EvaluatedSourceSchema),
 });
 
+export const RerankedSourceSchema = EvaluatedSourceSchema;
+
+export const RerankResultSchema = z.object({
+  ranked: z.array(
+    z.object({
+      id: z.number().int().min(1),
+      relevanceScore: z.number().min(0).max(1),
+      reason: z.string().optional(),
+    })
+  ),
+});
+
 export const EvaluatedRagOutputSchema = RagSearchOutputSchema.extend({
   evaluation: EvaluationResultSchema.optional(),
 });
@@ -84,13 +111,22 @@ export const ChatRequestSchema = z.object({
 export type ChatMessage = z.infer<typeof ChatMessageSchema>;
 export type OrchestratorDecision = z.infer<typeof OrchestratorDecisionSchema>;
 export type ToolName = z.infer<typeof ToolNameSchema>;
+export type ResultMode = z.infer<typeof ResultModeSchema>;
 export type SearchPlan = z.infer<typeof SearchPlanSchema>;
 export type RagSearchOutput = z.infer<typeof RagSearchOutputSchema>;
 export type EvaluatedSource = z.infer<typeof EvaluatedSourceSchema>;
+export type RerankedSource = z.infer<typeof RerankedSourceSchema>;
+export type RerankResult = z.infer<typeof RerankResultSchema>;
 export type EvaluationResult = z.infer<typeof EvaluationResultSchema>;
 export type EvaluatedRagOutput = z.infer<typeof EvaluatedRagOutputSchema>;
 export type FinalAnswer = z.infer<typeof FinalAnswerSchema>;
 export type ChatRequestInput = z.infer<typeof ChatRequestSchema>;
+
+export interface RerankTrace {
+  inputCount: number;
+  outputCount: number;
+  modelLatencyMs: number;
+}
 
 export interface ChatAgentResponse {
   answer: string;
@@ -101,7 +137,10 @@ export interface ChatAgentResponse {
     orchestratorDecision: OrchestratorDecision;
     usedTool: ToolName;
     searchPlan?: SearchPlan;
+    queryBreakdown?: z.infer<typeof QueryBreakdownSchema>[];
     citations: string[];
     evaluationResult?: EvaluationResult;
+    standaloneQuestion?: string;
+    rerank?: RerankTrace;
   };
 }

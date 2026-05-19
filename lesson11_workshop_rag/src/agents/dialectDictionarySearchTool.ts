@@ -1,5 +1,10 @@
 import { config } from '../config';
 import type { HybridRetriever } from '../rag/hybridRetriever';
+import {
+  collectSearchResults,
+  perQueryLimitForMode,
+  resultLimitForMode,
+} from '../rag/resultCollector';
 import { fallbackPlan } from './queryPlannerAgent';
 import type { RagSearchOutput, SearchPlan } from './schemas';
 
@@ -44,15 +49,32 @@ export class DialectDictionarySearchTool {
     }
 
     const queries = buildDialectQueries(plan);
+    const finalLimit = resultLimitForMode({
+      desiredResultCount: plan.desiredResultCount,
+      fallbackLimit: config.search.dialectDictionaryTopK,
+      maxLimit: plan.resultMode === 'section' ? config.search.sectionMaxChunks : 50,
+    });
+    const perQueryLimit = perQueryLimitForMode({
+      finalLimit,
+      fallbackLimit: Math.min(config.search.dialectDictionaryTopK, 12),
+      broadMode: plan.resultMode !== 'answer',
+    });
     const searchResults = await Promise.all(
-      queries.map((searchQuery) =>
-        this.retriever.retrieve(searchQuery, config.search.dialectDictionaryTopK, {
+      queries.map(async (searchQuery) => ({
+        query: searchQuery,
+        sources: await this.retriever.retrieve(searchQuery, perQueryLimit, {
           fileNameIncludes: config.search.dialectDictionaryFile,
-        })
-      )
+        }),
+      }))
     );
-    const rankedSources = boostExactMatches(mergeSources(searchResults.flat()), plan);
-    const sources = rankedSources.slice(0, config.search.dialectDictionaryTopK);
+    const collected = collectSearchResults({
+      queryResults: searchResults,
+      limit: finalLimit,
+      perQueryKeep: perQueryLimit,
+      diversityBonus: 0.1,
+    });
+    const rankedSources = boostExactMatches(collected.sources, plan);
+    const sources = rankedSources.slice(0, finalLimit);
     const sectionSources = shouldExpandSection(plan)
       ? await this.expandSection(rankedSources, plan)
       : [];
@@ -63,6 +85,7 @@ export class DialectDictionarySearchTool {
       found: finalSources.length > 0,
       sources: finalSources,
       sourceCount: finalSources.length,
+      queryBreakdown: collected.queryBreakdown,
     };
   }
 
@@ -253,19 +276,3 @@ function buildDialectQueries(plan: SearchPlan): string[] {
   ].filter(Boolean))].slice(0, 14);
 }
 
-function mergeSources<T extends { text: string; score: number; fileName?: string; page?: number }>(
-  sources: T[]
-): T[] {
-  const byKey = new Map<string, T>();
-
-  for (const source of sources) {
-    const key = `${source.fileName || 'unknown'}:${source.page || 'unknown'}:${source.text.slice(0, 160)}`;
-    const existing = byKey.get(key);
-
-    if (!existing || source.score > existing.score) {
-      byKey.set(key, source);
-    }
-  }
-
-  return [...byKey.values()].sort((left, right) => right.score - left.score);
-}

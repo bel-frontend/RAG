@@ -1,5 +1,11 @@
 import { config } from '../config';
 import type { HybridRetriever } from '../rag/hybridRetriever';
+import {
+  collectSearchResults,
+  perQueryLimitForMode,
+  resultLimitForMode,
+  type QueryResultSet,
+} from '../rag/resultCollector';
 import { fallbackPlan } from './queryPlannerAgent';
 import type { RagSearchOutput, SearchPlan } from './schemas';
 
@@ -39,43 +45,91 @@ export class FolkWisdomSearchTool {
     }
 
     const queries = buildFolkWisdomQueries(plan);
+    const finalLimit = resultLimitForMode({
+      desiredResultCount: plan.desiredResultCount,
+      fallbackLimit: config.search.folkWisdomTopK,
+      maxLimit: 60,
+    });
+    const perQueryLimit = perQueryLimitForMode({
+      finalLimit,
+      fallbackLimit: Math.min(config.search.folkWisdomTopK, 12),
+      broadMode: plan.resultMode === 'list' || plan.resultMode === 'explore',
+    });
     const searchResults = await Promise.all(
-      queries.map((searchQuery) => this.retriever.retrieve(searchQuery, config.search.folkWisdomTopK))
+      queries.map(async (searchQuery): Promise<QueryResultSet> => ({
+        query: searchQuery.query,
+        weight: searchQuery.weight,
+        sources: await this.retriever.retrieve(searchQuery.query, perQueryLimit),
+      }))
     );
-    const sources = mergeSources(searchResults.flat()).slice(0, config.search.folkWisdomTopK);
+    const { sources, queryBreakdown } = collectSearchResults({
+      queryResults: searchResults,
+      limit: finalLimit,
+      perQueryKeep: perQueryLimit,
+      diversityBonus: 0.12,
+    });
 
     return {
-      query: queries.join(' | '),
+      query: queries.map((item) => item.query).join(' | '),
       found: sources.length > 0,
       sources,
       sourceCount: sources.length,
+      queryBreakdown,
     };
   }
 }
 
-function buildFolkWisdomQueries(plan: SearchPlan): string[] {
-  return [...new Set([
-    ...plan.expandedQueries,
-    `${plan.coreQuery} прыказкі прымаўкі`,
-    `${plan.coreQuery} народная мудрасць выслоўі`,
-    `${plan.coreQuery} proverbs sayings folk wisdom`,
-    FOLK_WISDOM_HINTS.join(' '),
-  ])].slice(0, 12);
+interface WeightedQuery {
+  query: string;
+  weight: number;
 }
 
-function mergeSources<T extends { text: string; score: number; fileName?: string; page?: number }>(
-  sources: T[]
-): T[] {
-  const byKey = new Map<string, T>();
+function buildFolkWisdomQueries(plan: SearchPlan): WeightedQuery[] {
+  const topicFacets = topicFacetQueries(plan);
+  const queryStrings = [
+    ...plan.expandedQueries,
+    ...(plan.semanticFacets || []),
+    ...topicFacets,
+    `${plan.coreQuery} прыказкі прымаўкі`,
+    `${plan.coreQuery} народная мудрасць выслоўі`,
+    `${plan.coreQuery} прыкметы народныя назіранні`,
+    `${plan.coreQuery} proverbs sayings folk wisdom`,
+  ];
+  const fallbackHint = FOLK_WISDOM_HINTS.join(' ');
+  const uniqueQueries = [...new Set(queryStrings.map((query) => query.trim()).filter(Boolean))].slice(0, 14);
 
-  for (const source of sources) {
-    const key = `${source.fileName || 'unknown'}:${source.page || 'unknown'}:${source.text.slice(0, 160)}`;
-    const existing = byKey.get(key);
+  return [
+    ...uniqueQueries.map((query) => ({
+      query,
+      weight: query === plan.coreQuery ? 1.15 : 1,
+    })),
+    { query: fallbackHint, weight: 0.72 },
+  ];
+}
 
-    if (!existing || source.score > existing.score) {
-      byKey.set(key, source);
-    }
+function topicFacetQueries(plan: SearchPlan): string[] {
+  const query = `${plan.coreQuery} ${plan.expandedQueries.join(' ')}`.toLowerCase();
+  const facets: string[] = [];
+
+  if (/(прыкмет|надвор|пагод|дождж|снег|вецер|мароз|сонц|weather|rain|snow|wind)/iu.test(query)) {
+    facets.push(
+      'прыкметы надвор’е пагода',
+      'народныя прыкметы дождж снег вецер мароз',
+      'прыкметы прырода сонца хмары'
+    );
   }
 
-  return [...byKey.values()].sort((left, right) => right.score - left.score);
+  if (/(прац|работ|гультай|лент|work|labor)/iu.test(query)) {
+    facets.push('прыказкі пра працу', 'прымаўкі праца лянота работлівасць');
+  }
+
+  if (/(жыцц|чалавек|людз|розум|дурн|life|people|wisdom)/iu.test(query)) {
+    facets.push('прыказкі пра жыццё чалавека', 'народная мудрасць розум дурнота людзі');
+  }
+
+  if (/(сям|род|бацьк|мац|family)/iu.test(query)) {
+    facets.push('прыказкі пра сям’ю род бацькоў', 'прымаўкі маці бацька дзеці');
+  }
+
+  return facets;
 }

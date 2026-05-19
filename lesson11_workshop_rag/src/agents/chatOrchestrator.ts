@@ -3,7 +3,9 @@ import { chatModel } from '../../../common/model';
 import { config } from '../config';
 import type { DialectDictionarySearchTool } from './dialectDictionarySearchTool';
 import type { FolkWisdomSearchTool } from './folkWisdomSearchTool';
+import { LlmReranker } from './llmReranker';
 import { QueryPlannerAgent, fallbackPlan } from './queryPlannerAgent';
+import { QuestionRewriterAgent } from './questionRewriterAgent';
 import { RagResultEvaluator } from './ragResultEvaluator';
 import type { RagSearchAgent } from './ragSearchAgent';
 import {
@@ -15,9 +17,14 @@ import {
   type FinalAnswer,
   type OrchestratorDecision,
   type RagSearchOutput,
+  type RerankTrace,
+  type RerankedSource,
+  type SearchPlan,
   type ToolName,
 } from './schemas';
 import { parseStructuredOutput, schemaInstruction } from './json';
+
+const NARROW_MODE_TOP_K = 6;
 
 const DECISION_SYSTEM_PROMPT = [
   'You are the chat orchestrator agent for a RAG workshop.',
@@ -48,29 +55,37 @@ const LIST_FINAL_SYSTEM_PROMPT = [
   'present EVERY found item as a numbered list: "1. ...", "2. ...", etc.',
   'Each list item must be on its own line.',
   'Do not merge, summarise, or paraphrase individual proverbs or dictionary entries — quote them exactly from the context.',
+  'When the context contains many distinct relevant items, preserve breadth: include every distinct found item that answers the request.',
+  'If the search appears partial, say briefly that these are the found items, not a guaranteed complete collection.',
   'After the list you may add a short concluding sentence if useful.',
   'If context is missing or insufficient, say that the documents do not contain enough data.',
 ].join(' ');
 
 export class ChatOrchestratorAgent {
   private readonly evaluator = new RagResultEvaluator();
+  private readonly reranker = new LlmReranker();
 
   constructor(
     private readonly ragSearchAgent: RagSearchAgent,
     private readonly folkWisdomSearchTool: FolkWisdomSearchTool,
     private readonly dialectDictionarySearchTool: DialectDictionarySearchTool,
-    private readonly queryPlannerAgent = new QueryPlannerAgent()
+    private readonly queryPlannerAgent = new QueryPlannerAgent(),
+    private readonly questionRewriterAgent = new QuestionRewriterAgent()
   ) {}
 
   async chat(messages: ChatMessage[]): Promise<ChatAgentResponse> {
-    const latestQuestion = latestUserMessage(messages);
-    const decision = requiresDialectDictionaryTool(latestQuestion)
-      ? forcedDialectDictionaryDecision(latestQuestion)
-      : requiresFolkWisdomTool(latestQuestion)
-      ? forcedFolkWisdomDecision(latestQuestion)
-      : requiresDocumentSearch(latestQuestion)
-        ? forcedRagDecision(latestQuestion)
-        : await this.decide(messages, latestQuestion);
+    const originalQuestion = latestUserMessage(messages);
+    const standaloneQuestion = await this.questionRewriterAgent.rewrite(messages, originalQuestion);
+    const effectiveQuestion = standaloneQuestion || originalQuestion;
+    const wasRewritten = standaloneQuestion !== originalQuestion;
+
+    const decision = requiresDialectDictionaryTool(effectiveQuestion)
+      ? forcedDialectDictionaryDecision(effectiveQuestion)
+      : requiresFolkWisdomTool(effectiveQuestion)
+      ? forcedFolkWisdomDecision(effectiveQuestion)
+      : requiresDocumentSearch(effectiveQuestion)
+        ? forcedRagDecision(effectiveQuestion)
+        : await this.decide(messages, effectiveQuestion);
 
     if (decision.action === 'answer_directly') {
       return {
@@ -81,31 +96,29 @@ export class ChatOrchestratorAgent {
           orchestratorDecision: decision,
           usedTool: 'chat',
           citations: [],
+          ...(wasRewritten ? { standaloneQuestion } : {}),
         },
       };
     }
 
-    const searchQuery = decision.searchQuery?.trim() || latestQuestion;
+    const searchQuery = decision.searchQuery?.trim() || effectiveQuestion;
     const usedTool = toolForDecision(decision);
 
     // First search attempt
-    const { searchOutput, searchPlan, evaluation } = await this.searchAndEvaluate(
-      messages, latestQuestion, searchQuery, usedTool
+    const firstAttempt = await this.searchRerankEvaluate(
+      messages, effectiveQuestion, searchQuery, usedTool
     );
 
     // Retry once if evaluator says results are insufficient
-    const finalResult = !evaluation.sufficientForAnswer
-      ? await this.retrySearch(messages, latestQuestion, searchQuery, usedTool, searchOutput, evaluation)
-      : { searchOutput, searchPlan, evaluation };
+    const finalResult = !firstAttempt.evaluation.sufficientForAnswer
+      ? await this.retrySearch(messages, effectiveQuestion, searchQuery, usedTool, firstAttempt)
+      : firstAttempt;
 
     const enforcedPlan = { ...finalResult.searchPlan, tool: usedTool };
     const bestOutput = finalResult.searchOutput;
     const bestEvaluation = finalResult.evaluation;
-
-    // Use evaluator-filtered sources; fall back to raw sources if evaluator returned none
-    const sourcesForAnswer = bestEvaluation.relevantSources.length > 0
-      ? bestEvaluation.relevantSources
-      : bestOutput.sources;
+    const sourcesForAnswer = finalResult.rerankedSources;
+    const rerankTrace = finalResult.rerankTrace;
 
     if (!bestOutput.found || sourcesForAnswer.length === 0) {
       return {
@@ -118,18 +131,22 @@ export class ChatOrchestratorAgent {
           orchestratorDecision: decision,
           usedTool,
           searchPlan: enforcedPlan,
+          queryBreakdown: bestOutput.queryBreakdown,
           citations: [],
           evaluationResult: bestEvaluation,
+          rerank: rerankTrace,
+          ...(wasRewritten ? { standaloneQuestion } : {}),
         },
       };
     }
 
     const finalAnswer = await this.answerWithContext(
       messages,
-      latestQuestion,
+      effectiveQuestion,
       { ...bestOutput, sources: sourcesForAnswer },
       bestEvaluation,
-      usedTool
+      usedTool,
+      enforcedPlan
     );
 
     return {
@@ -141,18 +158,21 @@ export class ChatOrchestratorAgent {
         orchestratorDecision: decision,
         usedTool,
         searchPlan: enforcedPlan,
+        queryBreakdown: bestOutput.queryBreakdown,
         citations: finalAnswer.citations,
         evaluationResult: bestEvaluation,
+        rerank: rerankTrace,
+        ...(wasRewritten ? { standaloneQuestion } : {}),
       },
     };
   }
 
-  private async searchAndEvaluate(
+  private async searchRerankEvaluate(
     messages: ChatMessage[],
     latestQuestion: string,
     searchQuery: string,
     usedTool: ToolName
-  ): Promise<{ searchOutput: RagSearchOutput; searchPlan: ReturnType<typeof fallbackPlan>; evaluation: EvaluationResult }> {
+  ): Promise<SearchRerankResult> {
     const searchPlan =
       usedTool === 'chat'
         ? fallbackPlan(searchQuery, usedTool)
@@ -166,9 +186,22 @@ export class ChatOrchestratorAgent {
         ? await this.folkWisdomSearchTool.invokePlan(enforcedPlan)
         : await this.ragSearchAgent.searchPlan(enforcedPlan);
 
-    const evaluation = await this.evaluator.evaluate(latestQuestion, searchOutput, usedTool);
+    const topK = topKForPlan(enforcedPlan);
+    const { rankedSources, trace: rerankTrace } = await this.reranker.rerank({
+      question: latestQuestion,
+      sources: searchOutput.sources,
+      topK,
+    });
 
-    return { searchOutput, searchPlan, evaluation };
+    const evaluation = await this.evaluator.evaluate(latestQuestion, rankedSources, usedTool, enforcedPlan);
+
+    return {
+      searchOutput,
+      searchPlan,
+      rerankedSources: rankedSources,
+      rerankTrace,
+      evaluation,
+    };
   }
 
   private async retrySearch(
@@ -176,18 +209,17 @@ export class ChatOrchestratorAgent {
     latestQuestion: string,
     searchQuery: string,
     usedTool: ToolName,
-    prevOutput: RagSearchOutput,
-    prevEvaluation: EvaluationResult
-  ): Promise<{ searchOutput: RagSearchOutput; searchPlan: ReturnType<typeof fallbackPlan>; evaluation: EvaluationResult }> {
-    const retryHint = `${searchQuery} — попередній пошук: ${prevEvaluation.evaluationReason}`;
-    const result = await this.searchAndEvaluate(messages, latestQuestion, retryHint, usedTool);
+    previous: SearchRerankResult
+  ): Promise<SearchRerankResult> {
+    const retryHint = `${searchQuery} — папярэдні пошук: ${previous.evaluation.evaluationReason}`;
+    const result = await this.searchRerankEvaluate(messages, latestQuestion, retryHint, usedTool);
 
     // Keep whichever result has a higher quality score
-    if (result.evaluation.qualityScore >= prevEvaluation.qualityScore) {
+    if (result.evaluation.qualityScore >= previous.evaluation.qualityScore) {
       return result;
     }
 
-    return { searchOutput: prevOutput, searchPlan: fallbackPlan(searchQuery, usedTool), evaluation: prevEvaluation };
+    return previous;
   }
 
   private async decide(
@@ -226,7 +258,8 @@ export class ChatOrchestratorAgent {
     latestQuestion: string,
     searchOutput: RagSearchOutput,
     evaluation: EvaluationResult,
-    usedTool: ToolName
+    usedTool: ToolName,
+    searchPlan: SearchPlan
   ): Promise<FinalAnswer> {
     const isListTool = usedTool === 'folk_wisdom_search' || usedTool === 'dialect_dictionary_search';
     const systemPrompt = isListTool ? LIST_FINAL_SYSTEM_PROMPT : FINAL_SYSTEM_PROMPT;
@@ -248,15 +281,19 @@ export class ChatOrchestratorAgent {
           latestQuestion,
           evaluationQualityScore: evaluation.qualityScore,
           evaluationSufficient: evaluation.sufficientForAnswer,
+          resultMode: searchPlan.resultMode,
+          semanticFacets: searchPlan.semanticFacets,
           ragSearch: {
             query: searchOutput.query,
             found: searchOutput.found,
+            queryBreakdown: searchOutput.queryBreakdown || [],
             sources: searchOutput.sources.map((source, index) => ({
               id: index + 1,
               fileName: source.fileName,
               page: source.page,
               score: source.score,
               relevanceScore: 'relevanceScore' in source ? (source as { relevanceScore: number }).relevanceScore : source.score,
+              matchedQueries: source.matchedQueries || [],
               text: source.text,
             })),
           },
@@ -340,6 +377,24 @@ function toolForDecision(decision: OrchestratorDecision): ToolName {
   if (decision.action === 'search_folk_wisdom') return 'folk_wisdom_search';
   if (decision.action === 'search_rag') return 'rag_search';
   return 'chat';
+}
+
+interface SearchRerankResult {
+  searchOutput: RagSearchOutput;
+  searchPlan: SearchPlan;
+  rerankedSources: RerankedSource[];
+  rerankTrace: RerankTrace;
+  evaluation: EvaluationResult;
+}
+
+function topKForPlan(plan: SearchPlan): number {
+  if (plan.resultMode === 'list' || plan.resultMode === 'section' || plan.resultMode === 'explore') {
+    if (plan.desiredResultCount) return plan.desiredResultCount;
+    if (plan.resultMode === 'section') return 60;
+    return plan.tool === 'dialect_dictionary_search' ? 40 : 30;
+  }
+
+  return NARROW_MODE_TOP_K;
 }
 
 function requiresDialectDictionaryTool(question: string): boolean {

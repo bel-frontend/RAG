@@ -4,6 +4,9 @@ export interface RetrievedSource {
   source?: string;
   fileName?: string;
   page?: number;
+  matchedQueries?: string[];
+  vectorRank?: number;
+  lexicalRank?: number;
 }
 
 export interface RagAnswer {
