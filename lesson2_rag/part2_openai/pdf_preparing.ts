@@ -1,4 +1,4 @@
-import { loadPDFDocuments } from "../pdf_loader/pdf-loader";
+import { loadPDFDocuments } from "./pdf_loader/pdf-loader";
 import fs from "fs";
 
 const docs = await loadPDFDocuments("./pdf_documents/");
