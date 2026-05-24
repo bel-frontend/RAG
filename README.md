@@ -40,7 +40,7 @@ graph TD
 
 ### 📈 Чатыры асноўныя этапы:
 
-1.  **Знаёмства з AI IDE і асновы RAG (Урокі 1–2):** Вучымся працаваць з AI-рэдактарамі (Cursor, Zed, VS Code з пашырэннямі), а таксама ствараць першыя RAG-сістэмы лакальна (Ollama + Phi-4) і ў хмары (OpenAI API).
+1.  **Знаёмства з AI-інструментамі і асновы RAG (Урокі 1–2):** Вучымся працаваць праз Cursor, VS Code + GitHub Copilot і Claude Code, даваць кантэкст, запускаць TypeScript-прыклады і паступова пераходзіць да першых RAG-сістэм лакальна (Ollama + Phi-4) і ў хмары (OpenAI API).
 2.  **Структураваны вывад і месенджары (Урокі 3–6):** Вучым мадэлі вяртаць дадзеныя ў строгім фармаце JSON (праз Zod-схемы). Будуем разумных ботаў у Telegram і Discord, якія ўмеюць карыстацца інструментамі (`Tools`) — хадзіць у Google, правяраць надвор'е ці аналізаваць малюнкі.
 3.  **Канвееры і мультыагенты (Урокі 7–9):** Вывучаем сучасныя фрэймворкі. Спалучаем некалькі LLM у ланцужкі, ствараем уласны MCP-сервер і пішам складаныя графы ў LangGraph, дзе некалькі агентаў працуюць супольна.
 4.  **Рэальныя воркшопы (Урокі 10–12):** Збіраем гатовыя рашэнні пад ключ — ад кансольных утыліт апрацоўкі Markdown да вялікага вэб-дадатку з React-інтэрфейсам, які робіць RAG-пошук па цэлай бібліятэцы PDF з убудаваным OCR (распазнаваннем тэксту на сканах).
@@ -54,7 +54,7 @@ graph TD
 | Урок | Тэчка і спасылка | Тэма | Што вы пабудуеце |
 | :--- | :--- | :--- | :--- |
 | **0** | [lesson0_intro](file:///Users/serj/projects/lessons/RAG/lesson0_intro) | Уводзіны і наладка асяроддзя | Гід па наладцы IDE (VS Code, Zed або Cursor), усталёўцы Bun, Docker, Ollama і праграм. |
-| **1** | [lesson1_ai_ide](file:///Users/serj/projects/lessons/RAG/lesson1_ai_ide) | Знаёмства з AI IDE | Эфектыўная праца з Cursor, Zed, VS Code + Cline/Continue, напісанне промптаў і гарачыя клавішы. |
+| **1** | [lesson1_ai_ide](file:///Users/serj/projects/lessons/RAG/lesson1_ai_ide) | Знаёмства з AI-інструментамі | Першы практычны старт з Cursor, VS Code + GitHub Copilot і Claude Code: кантэкст, праўкі кода, запуск TypeScript-прыкладаў і праверка diff. |
 | **2** | [lesson2_rag](file:///Users/serj/projects/lessons/RAG/lesson2_rag) | Базавы RAG (Лакальны і Хмарны) | Стварэнне сістэмы RAG у дзвюх частках: цалкам лакальна (Ollama + Phi-4) і з выкарыстаннем хмарных сэрвісаў (OpenAI). |
 | **3** | [lesson3_formatted_result](file:///Users/serj/projects/lessons/RAG/lesson3_formatted_result) | Структураваны вывад | Telegram-бот для мадэрацыі чата, який адказвае строга ў JSON па Zod-схеме. |
 | **4** | [lesson4_agent](file:///Users/serj/projects/lessons/RAG/lesson4_agent) | AI-агент з інструментамі | Telegram-бот, який сам прымае рашэнні аб выкліку функцый (надвор'е, пошук, выявы). |
@@ -104,4 +104,3 @@ graph TD
 ---
 
 Удачы ў навучанні! Пачніце з [Урока 0](file:///Users/serj/projects/lessons/RAG/lesson0_intro) і паступова рухайцеся наперад!
-
