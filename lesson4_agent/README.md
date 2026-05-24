@@ -1,15 +1,30 @@
-# lesson4_agent
+# Урок 4: AI-агент з інструментамі ў Telegram
 
-To install dependencies:
+У гэтым уроку мы ствараем AI-агента для Telegram-бота, які можа выкарыстоўваць вонкавыя інструменты (Tools) для збору актуальнай інфармацыі і выканання задач.
 
-```bash
-bun install
-```
+## Апісанне
 
-To run:
+Агент рэалізаваны з дапамогай `createReactAgent` (LangGraph prebuilt), і яму даступныя наступныя інструменты:
+- `get_weather`: Даведацца надвор'е праз `wttr.in`.
+- `get_proverb_by_topic`: Атрымаць спіс беларускіх прыказак і прымавак.
+- `get_dog_photo`: Даслаць карыстальніку выпадковае фота сабакі праз вонкавае API.
 
-```bash
-bun run index.ts
-```
+Бот аналізуе пытанне карыстальніка, выклікае адпаведны інструмент (калі трэба) і фармуе адказ. Калі пытанне не тычыцца гэтых тэм, ён паведамляе, што не ведае адказу.
 
-This project was created using `bun init` in bun v1.2.8. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+## Як запусціць
+
+1. Усталюйце залежнасці:
+   ```bash
+   bun install
+   ```
+
+2. Наладзьце ключы доступу ў файле `.env`:
+   ```env
+   TELEGRAM_BOT_TOKEN=ваш_токен
+   OPENAI_API_KEY=ваш_openai_ключ
+   ```
+
+3. Запусціце бота:
+   ```bash
+   bun run index.ts
+   ```
