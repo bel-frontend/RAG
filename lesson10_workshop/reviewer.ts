@@ -52,8 +52,9 @@ interface ChangeLogEntry {
     summary: string[];
 }
 
-const CHUNK_SIZE = 3000; // Максімальны памер чанка ў сімвалах
-const MAX_PARALLEL = 2; // Максімум паралельных запытаў (2 для стабільнасці)
+const CHUNK_SIZE = 2000; // Меншыя чанкі зніжаюць рызыку timeout/API памылак
+const MAX_PARALLEL = Number(process.env.MD_REVIEW_PARALLEL ?? 4);
+const MAX_RETRIES = 3;
 const MAX_ITERATIONS = 2; // Абмежаванне, каб граф не сышоў у бясконцы цыкл
 
 // ============================================
@@ -398,6 +399,51 @@ ${modePrompt}
     };
 }
 
+async function reviewChunkWithRetry(
+    chunk: DocumentChunk,
+    mode: ReviewMode
+): Promise<ChunkResult> {
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        try {
+            return await reviewChunk(chunk, mode);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+
+            if (attempt === MAX_RETRIES) {
+                console.log(
+                    `      ⚠️ Чанк ${chunk.id + 1}: не ўдалося апрацаваць пасля ${MAX_RETRIES} спроб`
+                );
+
+                return {
+                    id: chunk.id,
+                    original: chunk.content,
+                    reviewed: chunk.content,
+                    score: 6,
+                    issues: [`Чанк ${chunk.id + 1} не апрацаваны: ${message}`],
+                };
+            }
+
+            const delayMs = 800 * attempt;
+            console.log(
+                `      ↻ Чанк ${chunk.id + 1}: ${message}. Паўтор праз ${delayMs}мс`
+            );
+            await sleep(delayMs);
+        }
+    }
+
+    return {
+        id: chunk.id,
+        original: chunk.content,
+        reviewed: chunk.content,
+        score: 6,
+        issues: [`Чанк ${chunk.id + 1} не апрацаваны`],
+    };
+}
+
+function sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 // ============================================
 // 🔀 Паралельная апрацоўка
 // ============================================
@@ -419,7 +465,7 @@ async function processChunksParallel(
         );
 
         const batchResults = await Promise.all(
-            batch.map((chunk) => reviewChunk(chunk, mode))
+            batch.map((chunk) => reviewChunkWithRetry(chunk, mode))
         );
 
         results.push(...batchResults);
@@ -447,7 +493,7 @@ async function processChunksSequential(
             );
         }
 
-        const result = await reviewChunk(chunk, mode);
+        const result = await reviewChunkWithRetry(chunk, mode);
         results.push(result);
 
         if (chunk.type !== 'code') {
