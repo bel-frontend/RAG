@@ -1,5 +1,5 @@
 import { DirectoryLoader } from 'langchain/document_loaders/fs/directory';
-import { PDFLoader } from 'langchain/document_loaders/fs/pdf';
+import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf';
 
 export async function loadPDFDocuments(directory: string) {
     console.log('Loading PDFs from the specified directory...');
