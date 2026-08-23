@@ -1,0 +1,17 @@
+[
+  {
+    "label": "Debug CV chat",
+    "adapter": "JavaScript",
+    "type": "node",
+    "request": "launch",
+    "program": "$ZED_WORKTREE_ROOT/lesson12_agents_graphs/cv_creator_custom/chat.ts",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "runtimeExecutable": "/home/serj/.nvm/versions/node/v24.19.0/bin/node",
+    "runtimeArgs": ["--experimental-transform-types"],
+    "console": "integratedTerminal",
+    "skipFiles": [
+      "<node_internals>/**",
+      "$ZED_WORKTREE_ROOT/node_modules/**"
+    ]
+  }
+]

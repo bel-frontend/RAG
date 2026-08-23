@@ -1,7 +1,10 @@
-import { Annotation } from '@langchain/langgraph';
-import { StateGraph, MemorySaver } from '@langchain/langgraph';
-import { CV_Structure,createCVFromText , vacancyText, candidateText} from './dataPrepare';
-import { log } from 'console';
+import {
+  Annotation,
+  interrupt,
+  MemorySaver,
+  StateGraph,
+} from '@langchain/langgraph';
+import { type CV_Structure, createCVFromText } from './dataPrepare.ts';
 
 
 
@@ -25,19 +28,37 @@ async function extractNode(state: CVStateType) {
 
 
 async function askUserNode(state: CVStateType) {
-  log('ASK USER NODE')
-  return {}
+  const answers = state.questionsToUser.map((question) => ({
+    question,
+    answer: interrupt<string, string>(question),
+  }));
+  const userAnswer = answers
+    .map(({ question, answer }) => `Question: ${question}\nAnswer: ${answer}`)
+    .join('\n\n');
+
+  return {
+    userAnswer,
+    candidateText: `${state.candidateText}\n\nAdditional information from the candidate:\n${userAnswer}`,
+    questionsToUser: [],
+  };
 }
 
 function afterExtract(state: CVStateType): "askUser" | "__end__" {
   return state.questionsToUser.length > 0 ? "askUser" : "__end__";
 }
 
+function checkExtractedDataNode(state: CVStateType) {
+  return state
+}
+
+
 const workflow = new StateGraph(CVState)
   .addNode("extract", extractNode)
   .addNode("askUser", askUserNode)
+  .addNode('checkExtractedData',checkExtractedDataNode)
   .addEdge("__start__", "extract")
-  .addConditionalEdges("extract", afterExtract, {
+  .addEdge("extract", "checkExtractedData")
+  .addConditionalEdges("checkExtractedData", afterExtract, {
     askUser: "askUser",
     __end__: "__end__",
   })
@@ -46,14 +67,10 @@ const workflow = new StateGraph(CVState)
 
 
 const checkpointer = new MemorySaver();
-const app = workflow.compile({
+export const app = workflow.compile({
   checkpointer,
-  interruptBefore: ["askUser"],
 });
 
-const config = { configurable: { thread_id: "cv-session-1" } };
-
-const state = await app.invoke(
-  { candidateText, vacancyText },
-  config,
-);
+export function createConfig(threadId: string) {
+  return { configurable: { thread_id: threadId } };
+}

@@ -8,7 +8,7 @@ import { log,dir } from 'console';
 
 // import { prisma } from "../db";
 
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+dotenv.config({ path: path.resolve(import.meta.dirname, '../../.env') });
 
 // ---------------------------------------------------------------------------
 // Domain types

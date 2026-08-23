@@ -1,29 +1,57 @@
-/* eslint-disable */
-import * as path from "path";
-import * as dotenv from "dotenv";
-import { z } from "zod";
-import { Annotation } from '@langchain/langgraph';
-import { StateGraph, MemorySaver } from '@langchain/langgraph';
+import { Command } from '@langchain/langgraph';
+import { createInterface } from 'node:readline/promises';
+import { stdin as input, stdout as output } from 'node:process';
+import { randomUUID } from 'node:crypto';
 
+import { candidateText, vacancyText } from './dataPrepare.ts';
+import { app, createConfig } from './orchestrator.ts';
 
-import { chatModel, Model } from "../../common/model.ts";
+type InterruptChunk = {
+  __interrupt__?: Array<{ value: string }>;
+};
 
-// import { prisma } from "../db";
+async function runChat() {
+  const terminal = createInterface({ input, output });
+  const config = createConfig(randomUUID());
+  let graphInput: Record<string, unknown> | Command = {
+    candidateText,
+    vacancyText,
+  };
 
-dotenv.config({ path: path.resolve(__dirname, "../.env") });
+  console.log('CV assistant started.\n');
 
+  try {
+    while (true) {
+      let answer: string | undefined;
 
+      for await (const chunk of await app.stream(graphInput, config)) {
+        const step = Object.keys(chunk)[0];
 
-const ResearchState = Annotation.Root({
+        if (step !== '__interrupt__') {
+          console.log(`[step: ${step}]`);
+        }
 
+        const question = (chunk as InterruptChunk).__interrupt__?.[0]?.value;
+        if (!question) continue;
+
+        console.log(`\nAssistant: ${question}`);
+        answer = await terminal.question('\nYou: ');
+      }
+
+      if (answer === undefined) {
+        const state = await app.getState(config);
+        console.log('\nCV is ready:\n', state.values.cv);
+        break;
+      }
+
+      graphInput = new Command({ resume: answer });
+    }
+  } finally {
+    terminal.close();
+  }
+}
+
+runChat().catch((error) => {
+  console.error('Chat failed:', error);
+  process.exitCode = 1;
 });
-
-const workflow = new StateGraph(ResearchState)
-
-
-const checkpointer = new MemorySaver();
-const app = workflow.compile({
-  checkpointer
-})
-
-app.invoke('')
