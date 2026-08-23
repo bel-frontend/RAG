@@ -8,7 +8,7 @@ import { log,dir } from 'console';
 
 // import { prisma } from "../db";
 
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 // ---------------------------------------------------------------------------
 // Domain types
@@ -29,7 +29,7 @@ interface CVEducation {
     endDate: string | null;
 }
 
-interface CV_Structure {
+export interface CV_Structure {
     fullName: string;
     targetRole: string;
     experience: CVExperience[];
@@ -121,7 +121,7 @@ const CVOrchestrationStateSchema = z.object({
   questionsToUser: z.array(z.string()).describe('Questions to ask the user that will help clarify the information required for the best ATS-adapted CV')
 });
 
-async function createCVFromText(
+export async function createCVFromText(
     userId: string,
     inputText: string,
     vacancyText: string
@@ -168,7 +168,7 @@ const CV_REQUIRED_FIELDS: (keyof CV_Structure)[] = [
 // Example run
 // ---------------------------------------------------------------------------
 
-const candidateText = `
+export const candidateText = `
   Siarhei Petrashka
 
   Senior Software Engineer / Senior Web Application Developer
@@ -239,7 +239,7 @@ const candidateText = `
   RussianBelarussianPolishEnglish - B2
 `;
 
-const vacancyText = `
+export const vacancyText = `
   Senior Software Engineer (AI, OCR/IDP & Automation)
   Stack: TypeScript (primary), Python/Go/Rust (plus), SQL/NoSQL
   Tools: AI-native environment
@@ -274,10 +274,10 @@ const vacancyText = `
   Working hours are aligned with the European time zone
 `;
 
-const userId = '';
+// const userId = '';
 
-const data = await createCVFromText(userId, candidateText, vacancyText);
+// const data = await createCVFromText(userId, candidateText, vacancyText);
 
-dir(data)
+// dir(data)
 
 // console.log(data, state);
