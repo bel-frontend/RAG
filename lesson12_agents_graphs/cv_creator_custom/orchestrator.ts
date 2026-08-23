@@ -19,18 +19,17 @@ type CVStateType = typeof CVState.State
 
 async function extractNode(state: CVStateType) {
   const result = await createCVFromText("", state.candidateText, state.vacancyText);
-  log('RESULT:',result)
   return { cv: result.data.cv, questionsToUser: result.data.questionsToUser, requiredData:result?.data?.meta?.requiredData };
 }
 
 
 
 async function askUserNode(state: CVStateType) {
+  log('ASK USER NODE')
   return {}
 }
 
 function afterExtract(state: CVStateType): "askUser" | "__end__" {
-  log("STATE:",state)
   return state.questionsToUser.length > 0 ? "askUser" : "__end__";
 }
 
