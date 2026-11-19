@@ -1,0 +1,1226 @@
+<!DOCTYPE html><html lang="be"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AIF-C01 — падручнік</title><style>
+:root{--bg:#f6f7fb;--card:#fff;--ink:#1d2433;--muted:#6b7280;--line:#e3e6ee;--acc:#3b5bdb;--th:#eef1fb}
+@media (prefers-color-scheme:dark){:root{--bg:#14171f;--card:#1d212c;--ink:#e6e8ee;--muted:#9aa1b1;--line:#2f3443;--acc:#7b93ff;--th:#262b3a}}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:16px}
+body{margin:0;font:16.5px/1.65 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink);display:flex}
+aside{position:sticky;top:0;height:100vh;overflow:auto;width:300px;flex:0 0 300px;background:var(--card);border-right:1px solid var(--line);padding:18px 14px;font-size:14px}
+aside a{color:var(--ink);text-decoration:none;display:block;padding:3px 6px;border-radius:6px}aside a:hover{background:var(--th)}
+aside ul{list-style:none;padding-left:10px;margin:0}aside>div>ul{padding-left:0}aside li li a{color:var(--muted)}
+aside .top a.q{display:block;text-align:center;background:var(--acc);color:#fff;border-radius:8px;padding:8px;margin-bottom:14px;font-weight:600}
+main{max-width:960px;padding:24px 36px 120px;margin:0 auto;min-width:0}
+h1{font-size:28px}h2{margin-top:2.2em;padding-top:.6em;border-top:2px solid var(--line)}h3{margin-top:1.6em}
+.tw{overflow-x:auto;margin:12px 0}table{border-collapse:collapse;width:100%;background:var(--card);font-size:15px}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}th{background:var(--th)}
+blockquote{margin:14px 0;padding:10px 16px;background:var(--card);border-left:4px solid var(--acc);border-radius:6px}
+code{background:var(--th);padding:1px 5px;border-radius:5px}a{color:var(--acc)}
+hr{border:0;border-top:1px solid var(--line)}
+@media(max-width:900px){body{display:block}aside{position:static;width:auto;height:auto}main{padding:16px}}
+@media print{aside{display:none}body{background:#fff;color:#000}}
+.term{border-bottom:1.5px dotted var(--acc);cursor:help}
+#gtip{position:fixed;z-index:50;max-width:380px;background:var(--card);color:var(--ink);border:1px solid var(--acc);border-radius:10px;padding:10px 12px;font-size:14px;line-height:1.45;box-shadow:0 8px 28px #0004;display:none}
+#gtip .gn{font-size:12px;color:var(--muted);margin-top:6px}
+</style></head><body>
+<aside><div class="top"><a class="q" href="index.html">▶ Адкрыць дадатак (тэорыя + трэнажор)</a></div><b>Змест</b><div class="toc">
+<ul>
+<li><a href="#aws-certified-ai-practitioner-aif-c01">AWS Certified AI Practitioner (AIF-C01) — падручнік</a><ul>
+<li><a href="#0">0. Як карыстацца матэрыяламі</a></li>
+<li><a href="#1">1. Тыповыя пасткі</a></li>
+<li><a href="#2-1-fundamentals-of-ai-and-ml-20">2. Домен 1 — Fundamentals of AI and ML (20%)</a><ul>
+<li><a href="#21-ai-ml-deep-learning-generative-ai">2.1. AI ⊃ ML ⊃ Deep Learning ⊃ Generative AI</a></li>
+<li><a href="#22">2.2. Тыпы навучання</a></li>
+<li><a href="#23-computer-vision">2.3. Тыпы задач Computer Vision</a></li>
+<li><a href="#24-ml-lifecycle">2.4. ML lifecycle (этапы праекта)</a></li>
+<li><a href="#25-overfitting-vs-underfitting">2.5. Overfitting vs Underfitting</a></li>
+<li><a href="#26">2.6. Метрыкі — абавязкова вывучыць</a></li>
+<li><a href="#27">2.7. Інтэрпрэтаванасць мадэляў</a></li>
+<li><a href="#28-sagemaker">2.8. SageMaker — карта інструментаў</a></li>
+<li><a href="#29-inference-sagemaker">2.9. Рэжымы inference у SageMaker</a></li>
+</ul>
+</li>
+<li><a href="#3-2-fundamentals-of-generative-ai-24">3. Домен 2 — Fundamentals of Generative AI (24%)</a><ul>
+<li><a href="#31">3.1. Базавыя паняцці</a></li>
+<li><a href="#32-fm">3.2. Як вучацца FM</a></li>
+<li><a href="#33">3.3. Архітэктуры мадэляў</a></li>
+<li><a href="#34-inference">3.4. Параметры inference</a></li>
+<li><a href="#35-prompt-engineering">3.5. Prompt engineering</a></li>
+<li><a href="#36-genai">3.6. Метрыкі GenAI</a></li>
+<li><a href="#37-genai">3.7. Плюсы і мінусы GenAI</a></li>
+</ul>
+</li>
+<li><a href="#4-3-applications-of-foundation-models-28">4. Домен 3 — Applications of Foundation Models (28%, самы вялікі)</a><ul>
+<li><a href="#41-amazon-bedrock-vs-sagemaker-jumpstart">4.1. Amazon Bedrock vs SageMaker JumpStart</a></li>
+<li><a href="#42-amazon-bedrock">4.2. Магчымасці Amazon Bedrock</a></li>
+<li><a href="#43-fm">4.3. Як адаптаваць FM — ад таннага да дарагога</a></li>
+<li><a href="#44-fm">4.4. Крытэрыі выбару FM</a></li>
+<li><a href="#45-ai-aws">4.5. AI-сэрвісы AWS — шпаргалка (вельмі частыя пытанні)</a></li>
+<li><a href="#46-vs">4.6. Бізнес-метрыкі vs тэхнічныя</a></li>
+</ul>
+</li>
+<li><a href="#5-4-guidelines-for-responsible-ai-14">5. Домен 4 — Guidelines for Responsible AI (14%) — 🔴 частыя памылкі частыя памылкі</a><ul>
+<li><a href="#51-responsible-ai-aws">5.1. Вымярэнні responsible AI (AWS)</a></li>
+<li><a href="#52-bias">5.2. Тыпы bias</a></li>
+<li><a href="#53-explainability">5.3. Explainability</a></li>
+<li><a href="#54-transparency">5.4. Transparency і дакументацыя</a></li>
+<li><a href="#55">5.5. Бяспечнасць кантэнту</a></li>
+<li><a href="#56-sustainability">5.6. Sustainability</a></li>
+<li><a href="#57-human-in-the-loop">5.7. Human-in-the-loop</a></li>
+</ul>
+</li>
+<li><a href="#6-5-security-compliance-governance-14">6. Домен 5 — Security, Compliance, Governance (14%) — 🔴 частыя памылкі</a><ul>
+<li><a href="#61">6.1. Сэрвісы бяспекі і кампліенсу — не блытаць!</a></li>
+<li><a href="#62-shared-responsibility-model">6.2. Shared responsibility model</a></li>
+<li><a href="#63-generative-ai-security-scoping-matrix">6.3. Generative AI Security Scoping Matrix</a></li>
+<li><a href="#64-governance">6.4. Прыватнасць і governance даных</a></li>
+</ul>
+</li>
+<li><a href="#7">7. Шпаргалка «ключавое слова → адказ»</a></li>
+<li><a href="#8">8. Апошнія парады перад экзаменам</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</aside>
+<main><h1 id="aws-certified-ai-practitioner-aif-c01">AWS Certified AI Practitioner (AIF-C01) — падручнік</h1>
+<p>Сціслы падручнік на беларускай мове для падрыхтоўкі да экзамену <strong>AWS Certified AI Practitioner (AIF-C01)</strong>. Тэорыя па ўсіх пяці даменах экзамену з табліцамі параўнання, шпаргалка «ключавое слова → адказ» і тыповыя пасткі. Тэрміны падкрэслены пункцірам: навядзі на тэрмін (або націсні), каб убачыць тлумачэнне.</p>
+<p>Практыка — у файле <strong><code>index.html</code></strong> (тэорыя са схемамі, трэнажор, сімуляцыя экзамену, карткі, слоўнік; адкрываецца ў браўзеры і працуе без інтэрнэту).</p>
+<hr />
+<h2 id="0">0. Як карыстацца матэрыяламі</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Крок</th>
+<th>Што рабіць</th>
+<th>Дзе</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Прачытай тыповыя пасткі і тэорыю па даменах. Найбольш часта памыляюцца ў D1 (базавыя паняцці ML), D4 (Responsible AI) і D5 (бяспека)</td>
+<td>гэты файл</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Прайдзі пытанні ў трэнажоры з разборам</td>
+<td><code>index.html</code> → Трэніроўка</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Паўтарай <strong>«Мае слабыя»</strong> / <strong>«Разумны рэжым»</strong>, пакуль спіс слабых не апусцее</td>
+<td><code>index.html</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td>Зрабі некалькі <strong>сімуляцый экзамену</strong> (90 хв). Мэта — стабільна ≥ 80%</td>
+<td><code>index.html</code> → Экзамен</td>
+</tr>
+</tbody>
+</table></div>
+<p>Статыстыка трэнажора захоўваецца ў браўзеры (localStorage) — прагрэс не губляецца паміж сесіямі.</p>
+<hr />
+<h2 id="1">1. Тыповыя пасткі</h2>
+<p>Найчасцей на экзамене памыляюцца ў наступным:</p>
+<ol>
+<li><strong>Блытаніна падобных сэрвісаў AWS</strong>: Polly ↔ Lex, Macie ↔ Inspector, Trusted Advisor ↔ Config, CloudTrail ↔ invocation logging, Clarify ↔ Model Monitor, Rekognition ↔ SageMaker, Bedrock ↔ JumpStart.</li>
+<li><strong>Базавыя паняцці ML</strong>: тыпы навучання (supervised / RL / transfer), метрыкі (accuracy vs F1, confusion matrix vs MAE), overfitting, этапы ML-праекта (EDA, use case).</li>
+<li><strong>Responsible AI</strong>: тыпы bias, інтэрпрэтаванасць мадэляў, SHAP vs PDP, празрыстасць.</li>
+<li><strong>Рэжымы inference SageMaker</strong>: serverless vs async vs batch.</li>
+<li><strong>Параметры і кастамізацыя FM</strong>: Top K vs Top P, continued pre-training vs fine-tuning, self-supervised vs supervised.</li>
+</ol>
+<blockquote>
+<p>💡 <strong>Лайфхак для экзамену:</strong> у кожным пытанні шукай <em>ключавыя словы-трыгеры</em> (раздзел 7). Большасць памылак — не ад няведання, а ад таго, што не заўважыў ключавое слова («less than 1 GB», «intermittent», «prompts and responses», «who called the API», «energy efficient»).</p>
+</blockquote>
+<hr />
+<h2 id="2-1-fundamentals-of-ai-and-ml-20">2. Домен 1 — Fundamentals of AI and ML (20%)</h2>
+<h3 id="21-ai-ml-deep-learning-generative-ai">2.1. AI ⊃ ML ⊃ Deep Learning ⊃ Generative AI</h3>
+<ul>
+<li><strong>AI</strong> — любая сістэма, што імітуе інтэлект (у т.л. правілы).</li>
+<li><strong>ML</strong> — мадэль вучыцца на даных, а не праграмуецца правіламі.</li>
+<li><strong>Deep Learning</strong> — ML на шматслойных нейронных сетках (CNN для выяў, RNN/Transformers для паслядоўнасцей).</li>
+<li><strong>Generative AI</strong> — DL-мадэлі, што <em>ствараюць</em> новы кантэнт (тэкст, выявы, код, аўдыё).</li>
+</ul>
+<h3 id="22">2.2. Тыпы навучання</h3>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Тып</th>
+<th>Даныя</th>
+<th>Што робіць</th>
+<th>Прыклады алгарытмаў / задач</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Supervised</strong></td>
+<td>размечаныя (ёсць правільны адказ)</td>
+<td>вучыцца прадказваць метку</td>
+<td>Лінейная/лагістычная рэгрэсія, дрэвы рашэнняў, <strong>нейронныя сеткі</strong>, SVM. Класіфікацыя (spam/не spam), рэгрэсія (цана)</td>
+</tr>
+<tr>
+<td><strong>Unsupervised</strong></td>
+<td>без метак</td>
+<td>шукае структуру</td>
+<td><strong>K-means</strong> (кластарызацыя), <strong>PCA</strong> (памяншэнне памернасці), выяўленне анамалій</td>
+</tr>
+<tr>
+<td><strong>Semi-supervised</strong></td>
+<td>трохі метак + шмат без</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Self-supervised</strong></td>
+<td>меткі генеруюцца з саміх даных</td>
+<td></td>
+<td><strong>Pre-training FM</strong> (прадказаць наступны / прапушчаны токен)</td>
+</tr>
+<tr>
+<td><strong>Reinforcement learning</strong></td>
+<td>узаемадзеянне з асяроддзем</td>
+<td><strong>агент</strong> робіць <strong>дзеянні</strong>, атрымлівае <strong>ўзнагароды/штрафы</strong>, вучыць <strong>палітыку</strong>, каб максімізаваць сукупную ўзнагароду</td>
+<td>Робататэхніка, гульні, AWS DeepRacer, <strong>RLHF</strong> (чат-бот вучыцца на зваротнай сувязі)</td>
+</tr>
+<tr>
+<td><strong>Transfer learning</strong></td>
+<td></td>
+<td>пераносіць веды з адной задачы на <strong>сумежную</strong></td>
+<td>Fine-tuning прадугледжанай мадэлі</td>
+</tr>
+</tbody>
+</table></div>
+<blockquote>
+<p>⚠️ Пастка: «чат-бот павінен пастаянна паляпшацца з узаемадзеянняў з кліентамі / зваротнай сувязі» → <strong>RL</strong>, а не incremental training.</p>
+</blockquote>
+<h3 id="23-computer-vision">2.3. Тыпы задач Computer Vision</h3>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Задача</th>
+<th>Што робіць</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Image classification</td>
+<td>адна метка на ўсю выяву («тут ёсць кот»)</td>
+</tr>
+<tr>
+<td><strong>Object detection</strong></td>
+<td>знаходзіць <strong>і</strong> класіфікуе <strong>кожны</strong> аб'ект (bounding boxes) — «ідэнтыфікаваць і класіфікаваць кожную жывёлу»</td>
+</tr>
+<tr>
+<td>Segmentation</td>
+<td>метка для кожнага пікселя</td>
+</tr>
+<tr>
+<td>OCR</td>
+<td>тэкст з выявы (Textract)</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="24-ml-lifecycle">2.4. ML lifecycle (этапы праекта)</h3>
+<ol>
+<li><strong>Вызначэнне бізнес-задачы</strong> — вузка і дакладна сфармуляваць use case і метрыку поспеху (напрыклад: «што спачатку папрасіць каманду?» → <em>define the use case narrowly</em>).</li>
+<li><strong>Збор даных</strong>.</li>
+<li><strong>EDA (Exploratory Data Analysis)</strong> — статыстыка, візуалізацыі, пошук патэрнаў і анамалій.</li>
+<li><strong>Data preparation</strong> — ачыстка, прапушчаныя значэнні, нармалізацыя, балансаванне.</li>
+<li><strong>Feature engineering</strong> — стварэнне/адбор прыкмет.</li>
+<li><strong>Training</strong> + <strong>hyperparameter tuning</strong>.</li>
+<li><strong>Evaluation</strong> — ацэнка і параўнанне мадэляў на тэставых даных.</li>
+<li><strong>Deployment</strong> → <strong>Inference</strong> (выкарыстанне мадэлі для прагнозаў на новых даных).</li>
+<li><strong>Monitoring</strong> (дрэйф даных/якасці) → перанавучанне.</li>
+</ol>
+<blockquote>
+<p><strong>Evaluation</strong> = выбраць/ацаніць мадэль. <strong>Inference</strong> = выкарыстоўваць мадэль для прагнозаў.</p>
+</blockquote>
+<p><strong>Parameters vs hyperparameters:</strong> weights/biases мадэль вучыць сама (parameters); learning rate, epochs, batch size, глыбіню дрэва задаеш ты (hyperparameters).</p>
+<h3 id="25-overfitting-vs-underfitting">2.5. Overfitting vs Underfitting</h3>
+<div class="tw"><table>
+<thead>
+<tr>
+<th></th>
+<th>Overfitting (high variance)</th>
+<th>Underfitting (high bias)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Сімптом</td>
+<td><strong>Выдатна на train, дрэнна на новых даных</strong></td>
+<td>Дрэнна і на train, і на test</td>
+</tr>
+<tr>
+<td>Лячэнне</td>
+<td>рэгулярызацыя (L1/L2), dropout, early stopping, <strong>hyperparameter tuning</strong>, больш даных, data augmentation, прасцейшая мадэль</td>
+<td>больш складаная мадэль, больш прыкмет, вучыць даўжэй</td>
+</tr>
+</tbody>
+</table></div>
+<blockquote>
+<p>⚠️ «Reduce training data» — <strong>ніколі</strong> не лечыць overfitting.</p>
+</blockquote>
+<h3 id="26">2.6. Метрыкі — абавязкова вывучыць</h3>
+<p><strong>Confusion matrix</strong> (класіфікацыя):</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th></th>
+<th>Прагноз: +</th>
+<th>Прагноз: −</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Факт: +</strong></td>
+<td>TP</td>
+<td>FN</td>
+</tr>
+<tr>
+<td><strong>Факт: −</strong></td>
+<td>FP</td>
+<td>TN</td>
+</tr>
+</tbody>
+</table></div>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Метрыка</th>
+<th>Формула</th>
+<th>Калі выкарыстоўваць</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Accuracy</strong></td>
+<td>(TP+TN)/усе</td>
+<td>«агульны % правільных прагнозаў», класы збалансаваныя</td>
+</tr>
+<tr>
+<td><strong>Precision</strong></td>
+<td>TP/(TP+FP)</td>
+<td>ілжывыя трывогі дарагія (спам-фільтр)</td>
+</tr>
+<tr>
+<td><strong>Recall</strong> (sensitivity)</td>
+<td>TP/(TP+FN)</td>
+<td>нельга прапусціць (фрод, хваробы)</td>
+</tr>
+<tr>
+<td><strong>F1</strong></td>
+<td>2·P·R/(P+R)</td>
+<td>незбалансаваныя класы, баланс P і R</td>
+</tr>
+<tr>
+<td><strong>AUC-ROC</strong></td>
+<td>плошча пад ROC</td>
+<td>якасць падзелу класаў па ўсіх парогах</td>
+</tr>
+<tr>
+<td><strong>Confusion matrix</strong></td>
+<td></td>
+<td><strong>дэталёвы</strong> аналіз памылак класіфікацыі па класах</td>
+</tr>
+<tr>
+<td><strong>MAE, RMSE, R²</strong></td>
+<td></td>
+<td><strong>рэгрэсія</strong> (неперарыўныя значэнні)</td>
+</tr>
+</tbody>
+</table></div>
+<p>Метрыкі GenAI — гл. раздзел 3.6. Бізнес-метрыкі — гл. 4.6.</p>
+<h3 id="27">2.7. Інтэрпрэтаванасць мадэляў</h3>
+<p><strong>White box</strong> (лёгка тлумачыць): лінейная/лагістычная рэгрэсія, дрэвы рашэнняў.
+<strong>Black box</strong>: нейронныя сеткі, вялікія ансамблі, LLM.
+Trade-off: <strong>больш складаная мадэль → звычайна дакладней, але менш інтэрпрэтавана</strong>.</p>
+<h3 id="28-sagemaker">2.8. SageMaker — карта інструментаў</h3>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Інструмент</th>
+<th>Для чаго</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Studio</strong></td>
+<td>IDE для ML (ноўтбукі, увесь цыкл)</td>
+</tr>
+<tr>
+<td><strong>Canvas</strong></td>
+<td><strong>no-code</strong> ML для аналітыкаў</td>
+</tr>
+<tr>
+<td><strong>Data Wrangler</strong></td>
+<td>падрыхтоўка даных, візуалізацыі, <strong>балансаванне класаў</strong> (oversampling/undersampling/SMOTE)</td>
+</tr>
+<tr>
+<td><strong>Ground Truth</strong></td>
+<td><strong>разметка</strong> даных (людзі + аўтаразметка)</td>
+</tr>
+<tr>
+<td><strong>Feature Store</strong></td>
+<td>сховішча прыкмет (online/offline)</td>
+</tr>
+<tr>
+<td><strong>JumpStart</strong></td>
+<td>ML-хаб: прадугледжаныя мадэлі (у т.л. FM) і гатовыя рашэнні, <strong>one-click deploy</strong>, кастамізацыя сваімі данымі, параўнанне FM па метрыках</td>
+</tr>
+<tr>
+<td><strong>Autopilot</strong></td>
+<td>AutoML (аўтаматычна выбірае алгарытм)</td>
+</tr>
+<tr>
+<td><strong>Clarify</strong></td>
+<td><strong>bias</strong> (да і пасля навучання) + <strong>explainability</strong> (SHAP)</td>
+</tr>
+<tr>
+<td><strong>Model Monitor</strong></td>
+<td>маніторынг у прадакшне: дрэйф даных, якасці, bias, feature attribution</td>
+</tr>
+<tr>
+<td><strong>Model Cards</strong></td>
+<td>дакументацыя мадэлі (прызначэнне, рызыкі, метрыкі)</td>
+</tr>
+<tr>
+<td><strong>Model Registry</strong></td>
+<td>каталог версій мадэляў, зацвярджэнне</td>
+</tr>
+<tr>
+<td><strong>Model Dashboard</strong></td>
+<td>агульны агляд мадэляў і іх стану</td>
+</tr>
+<tr>
+<td><strong>Pipelines</strong></td>
+<td>MLOps / CI-CD для ML</td>
+</tr>
+<tr>
+<td><strong>Role Manager</strong></td>
+<td>хуткая налада IAM-роляў для ML-персон</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="29-inference-sagemaker">2.9. Рэжымы inference у SageMaker</h3>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Рэжым</th>
+<th>Трыгеры ў пытанні</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Real-time</strong></td>
+<td>нізкая затрымка, пастаянны трафік, адказ за мілісекунды, пастаянны endpoint</td>
+</tr>
+<tr>
+<td><strong>Serverless</strong></td>
+<td><strong>перарывісты / непрадказальны</strong> трафік, <strong>не хочам кіраваць інфраструктурай</strong>, <strong>cold start прымальны</strong>, эканомія</td>
+</tr>
+<tr>
+<td><strong>Asynchronous</strong></td>
+<td>вялікі payload (<strong>да 1 ГБ</strong>), доўгая апрацоўка (да ~1 гадз), <strong>адказ не патрэбен адразу</strong>, чарга, можна маштабаваць да 0</td>
+</tr>
+<tr>
+<td><strong>Batch transform</strong></td>
+<td>прагноз для <strong>ўсяго датасэта</strong> ў S3, перыядычна/офлайн, <strong>без endpoint</strong></td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2 id="3-2-fundamentals-of-generative-ai-24">3. Домен 2 — Fundamentals of Generative AI (24%)</h2>
+<h3 id="31">3.1. Базавыя паняцці</h3>
+<ul>
+<li><strong>Token</strong> — частка тэксту (слова/частка слова). Плата і ліміты — у токенах.</li>
+<li><strong>Context window</strong> — колькі токенаў мадэль бачыць за раз (промпт + адказ).</li>
+<li><strong>Embedding</strong> — вектар лікаў, які перадае сэнс; блізкія па сэнсе → блізкія вектары. Аснова semantic search і RAG.</li>
+<li><strong>Vector database</strong> — захоўвае embeddings і хутка шукае падобныя (OpenSearch Serverless, Aurora PostgreSQL pgvector, Neptune Analytics, Pinecone, Redis, MongoDB Atlas).</li>
+<li><strong>Foundation Model (FM)</strong> — вялікая мадэль, навучаная на велізарных даных, адаптуецца да многіх задач.</li>
+<li><strong>LLM</strong> — FM для тэксту.</li>
+<li><strong>Multimodal</strong> — некалькі тыпаў даных (тэкст + выявы + …).</li>
+<li><strong>Hallucination</strong> — праўдападобны, але ілжывы адказ.</li>
+</ul>
+<h3 id="32-fm">3.2. Як вучацца FM</h3>
+<ul>
+<li><strong>Pre-training</strong> — <strong>self-supervised</strong> на велізарных неразмечаных даных (прадказанне наступнага токена).</li>
+<li><strong>Fine-tuning</strong> — <strong>supervised</strong> на размечаных прыкладах (prompt → completion).</li>
+<li><strong>Continued pre-training</strong> — дадатковае self-supervised навучанне на <strong>неразмечаных</strong> дамэнных даных.</li>
+<li><strong>RLHF</strong> — даводка па перавагах людзей (reinforcement learning from human feedback).</li>
+</ul>
+<h3 id="33">3.3. Архітэктуры мадэляў</h3>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Мадэль</th>
+<th>Як працуе</th>
+<th>Для чаго</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Transformer</strong></td>
+<td>self-attention</td>
+<td>аснова ўсіх LLM</td>
+</tr>
+<tr>
+<td><strong>BERT</strong></td>
+<td>encoder, <strong>bidirectional</strong>, masked language modeling</td>
+<td>разуменне тэксту, класіфікацыя, <strong>запоўніць прапушчанае слова</strong></td>
+</tr>
+<tr>
+<td><strong>GPT</strong></td>
+<td>decoder, autoregressive</td>
+<td>генерацыя тэксту</td>
+</tr>
+<tr>
+<td><strong>Diffusion</strong></td>
+<td>вучыцца прыбіраць шум</td>
+<td>генерацыя выяў (Stable Diffusion)</td>
+</tr>
+<tr>
+<td><strong>GAN</strong></td>
+<td>генератар vs дыскрымінатар</td>
+<td><strong>рэалістычныя сінтэтычныя даныя</strong>, выявы</td>
+</tr>
+<tr>
+<td><strong>VAE</strong></td>
+<td>encoder → латэнтная прастора → decoder</td>
+<td>генерацыя, выяўленне анамалій</td>
+</tr>
+<tr>
+<td><strong>WaveNet</strong></td>
+<td></td>
+<td>генерацыя <strong>аўдыё/маўлення</strong></td>
+</tr>
+<tr>
+<td><strong>CNN</strong></td>
+<td>згорткі</td>
+<td>выявы (класіфікацыя, детэкцыя)</td>
+</tr>
+<tr>
+<td><strong>RNN/LSTM</strong></td>
+<td>паслядоўна</td>
+<td>старэйшы падыход для паслядоўнасцей</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="34-inference">3.4. Параметры inference</h3>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Параметр</th>
+<th>Што робіць</th>
+<th>Нізкае значэнне</th>
+<th>Высокае значэнне</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Temperature</strong></td>
+<td>выпадковасць</td>
+<td>дэтэрмінавана, кансерватыўна</td>
+<td>крэатыўна, разнастайна</td>
+</tr>
+<tr>
+<td><strong>Top K</strong></td>
+<td><strong>колькасць</strong> найбольш імаверных кандыдатаў</td>
+<td>менш варыянтаў</td>
+<td>больш варыянтаў</td>
+</tr>
+<tr>
+<td><strong>Top P</strong></td>
+<td><strong>кумулятыўная імавернасць</strong> кандыдатаў (nucleus)</td>
+<td>толькі самыя імаверныя</td>
+<td>шырэйшы выбар</td>
+</tr>
+<tr>
+<td><strong>Max tokens</strong></td>
+<td>максімальная даўжыня адказу</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Stop sequences</strong></td>
+<td>дзе спыніць генерацыю</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table></div>
+<blockquote>
+<p>Мнемоніка: <strong>K — Kolькасць</strong>, <strong>P — Probability</strong>.</p>
+</blockquote>
+<h3 id="35-prompt-engineering">3.5. Prompt engineering</h3>
+<ul>
+<li><strong>Zero-shot</strong> — без прыкладаў. <strong>Few-shot</strong> — некалькі прыкладаў «уваход → патрэбны выхад» (напрыклад: для класіфікацыі намеру прыклады = <em>паведамленне → intent</em>).</li>
+<li><strong>Chain-of-thought</strong> — «разважай крок за крокам».</li>
+<li><strong>Role / system prompt</strong> — задаць ролю і правілы.</li>
+<li><strong>Prompt template</strong> — шаблон з інструкцыямі, у т.л. абарона ад атак.</li>
+<li><strong>Negative prompting</strong> — што НЕ рабіць (часта ў генерацыі выяў).</li>
+</ul>
+<p><strong>Атакі на промпты:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Атака</th>
+<th>Сутнасць</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Prompt injection</strong></td>
+<td>шкодная інструкцыя ў уводзе перапісвае паводзіны мадэлі</td>
+</tr>
+<tr>
+<td><strong>Jailbreak</strong></td>
+<td>абыход абмежаванняў бяспекі</td>
+</tr>
+<tr>
+<td><strong>Prompt leaking</strong></td>
+<td>выцягнуць сістэмны промпт</td>
+</tr>
+<tr>
+<td><strong>Data poisoning</strong></td>
+<td>шкодныя даныя трапляюць у <strong>навучанне</strong></td>
+</tr>
+<tr>
+<td><strong>Model inversion / extraction</strong></td>
+<td>аднавіць навучальныя даныя / скапіяваць мадэль</td>
+</tr>
+</tbody>
+</table></div>
+<p>Абарона: Guardrails, prompt templates з інструкцыямі, валідацыя ўводу, мінімальныя правы, маніторынг.</p>
+<h3 id="36-genai">3.6. Метрыкі GenAI</h3>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Метрыка</th>
+<th>Для чаго</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ROUGE</strong></td>
+<td>сумарызацыя (recall n-gram)</td>
+</tr>
+<tr>
+<td><strong>BLEU</strong></td>
+<td>машынны пераклад (precision n-gram)</td>
+</tr>
+<tr>
+<td><strong>BERTScore</strong></td>
+<td>семантычнае падабенства праз embeddings</td>
+</tr>
+<tr>
+<td><strong>Perplexity</strong></td>
+<td>наколькі добра мадэль прадказвае тэкст (ніжэй — лепш)</td>
+</tr>
+<tr>
+<td>Faithfulness / groundedness</td>
+<td>ці абапіраецца адказ RAG на знойдзены кантэкст</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="37-genai">3.7. Плюсы і мінусы GenAI</h3>
+<p>Плюсы: адаптыўнасць, хуткасць, персаналізацыя, творчасць. Мінусы: hallucinations, недэтэрмінаванасць, складана тлумачыць, bias, кошт, пытанні IP і бяспекі.</p>
+<hr />
+<h2 id="4-3-applications-of-foundation-models-28">4. Домен 3 — Applications of Foundation Models (28%, самы вялікі)</h2>
+<h3 id="41-amazon-bedrock-vs-sagemaker-jumpstart">4.1. Amazon Bedrock vs SageMaker JumpStart</h3>
+<div class="tw"><table>
+<thead>
+<tr>
+<th></th>
+<th><strong>Amazon Bedrock</strong></th>
+<th><strong>SageMaker JumpStart</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Што гэта</td>
+<td><strong>Serverless</strong> доступ да FM праз <strong>адзін API</strong></td>
+<td><strong>ML-хаб</strong> унутры SageMaker</td>
+</tr>
+<tr>
+<td>Мадэлі</td>
+<td>Anthropic, Amazon Nova/Titan, Meta, Mistral, Cohere, AI21, Stability AI і інш.</td>
+<td>сотні open-source і прапрыетарных мадэляў + гатовыя рашэнні</td>
+</tr>
+<tr>
+<td>Інфраструктура</td>
+<td>не кіруеш зусім</td>
+<td>разгортваеш на сваіх endpoint'ах (больш кантролю)</td>
+</tr>
+<tr>
+<td>Ключавыя словы</td>
+<td>«generative AI», «API», «no infrastructure», «guardrails», «agents», «knowledge bases»</td>
+<td>«pre-built solutions», «one-click deploy», «customize with your data», «compare/evaluate FMs»</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="42-amazon-bedrock">4.2. Магчымасці Amazon Bedrock</h3>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Функцыя</th>
+<th>Для чаго</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Knowledge Bases</strong></td>
+<td><strong>RAG</strong>: дакументы (S3 і інш.) → chunking → embeddings → vector store. <strong>Па змаўчанні — Amazon OpenSearch Serverless</strong></td>
+</tr>
+<tr>
+<td><strong>Agents</strong></td>
+<td>шматкрокавыя задачы, выклік API праз action groups (Lambda), выкарыстанне KB</td>
+</tr>
+<tr>
+<td><strong>Guardrails</strong></td>
+<td>denied topics, content filters (у т.л. prompt attacks), word filters, <strong>PII redaction</strong>, contextual grounding check — для ўваходу і выхаду</td>
+</tr>
+<tr>
+<td><strong>Model evaluation</strong></td>
+<td>аўтаматычная і human-ацэнка мадэляў на сваіх даных</td>
+</tr>
+<tr>
+<td><strong>Custom models</strong></td>
+<td>fine-tuning (размечаныя даныя), continued pre-training (неразмечаныя), distillation</td>
+</tr>
+<tr>
+<td><strong>Model invocation logging</strong></td>
+<td>логі <strong>прамтаў і адказаў</strong> у CloudWatch Logs / S3</td>
+</tr>
+<tr>
+<td><strong>Prompt management / Flows</strong></td>
+<td>шаблоны промптаў, ланцужкі</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Цэнаўтварэнне:</strong> On-Demand (плата за токены) · <strong>Batch</strong> (танней для вялікіх аб'ёмаў, асінхронна) · <strong>Provisioned Throughput</strong> (гарантаваная прапускная здольнасць; патрэбна для многіх кастамізаваных мадэляў).</p>
+<p><strong>Даныя кліента</strong> не выкарыстоўваюцца для навучання базавых мадэляў і не перадаюцца правайдарам.</p>
+<h3 id="43-fm">4.3. Як адаптаваць FM — ад таннага да дарагога</h3>
+<ol>
+<li><strong>Prompt engineering</strong> (хутка, танна)</li>
+<li><strong>RAG</strong> — калі патрэбныя <strong>актуальныя/свае</strong> даныя, што часта мяняюцца, без перанавучання</li>
+<li><strong>Fine-tuning</strong> — змяніць стыль/фармат/паводзіны на канкрэтнай задачы (размечаныя даныя)</li>
+<li><strong>Continued pre-training</strong> — даведаць дамэн (неразмечаныя даныя)</li>
+<li><strong>Навучанне з нуля</strong> (вельмі дорага)</li>
+</ol>
+<p><strong>Transfer learning</strong> — агульная ідэя: перанесці навучаную мадэль на сумежную задачу.</p>
+<h3 id="44-fm">4.4. Крытэрыі выбару FM</h3>
+<p>Кошт, <strong>latency (→ памер мадэлі, )</strong>, дакладнасць, памер кантэксту, мадальнасць, мовы, ліцэнзія, магчымасць кастамізацыі, адпаведнасць патрабаванням.</p>
+<h3 id="45-ai-aws">4.5. AI-сэрвісы AWS — шпаргалка (вельмі частыя пытанні)</h3>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Сэрвіс</th>
+<th>Што робіць</th>
+<th>Ключавыя словы</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Amazon Comprehend</strong></td>
+<td>NLP: sentiment, сутнасці, ключавыя фразы, мова, <strong>PII detection/redaction</strong>, класіфікацыя</td>
+<td>«analyze text», «sentiment», «redact PII»</td>
+</tr>
+<tr>
+<td><strong>Amazon Textract</strong></td>
+<td>тэкст, табліцы, формы з дакументаў/сканаў</td>
+<td>«extract text from documents/forms»</td>
+</tr>
+<tr>
+<td><strong>Amazon Rekognition</strong></td>
+<td>аналіз <strong>выяў і відэа</strong>: аб'екты, твары, модэрацыя, <strong>Custom Labels</strong></td>
+<td>«images», «video», «computer vision», «faces»</td>
+</tr>
+<tr>
+<td><strong>Amazon Polly</strong></td>
+<td><strong>тэкст → маўленне</strong></td>
+<td>«text to speech», «audio courses»</td>
+</tr>
+<tr>
+<td><strong>Amazon Transcribe</strong></td>
+<td><strong>маўленне → тэкст</strong></td>
+<td>«transcribe calls», «subtitles»</td>
+</tr>
+<tr>
+<td><strong>Amazon Translate</strong></td>
+<td>пераклад</td>
+<td>«multilingual»</td>
+</tr>
+<tr>
+<td><strong>Amazon Lex</strong></td>
+<td><strong>чат-боты</strong> (голас/тэкст, як Alexa)</td>
+<td>«conversational interface», «chatbot»</td>
+</tr>
+<tr>
+<td><strong>Amazon Kendra</strong></td>
+<td>інтэлектуальны enterprise search</td>
+<td>«search across documents»</td>
+</tr>
+<tr>
+<td><strong>Amazon Personalize</strong></td>
+<td>рэкамендацыі</td>
+<td>«recommendations»</td>
+</tr>
+<tr>
+<td><strong>Amazon Q Business</strong></td>
+<td>GenAI-асістэнт на карпаратыўных даных</td>
+<td>«employees», «enterprise data»</td>
+</tr>
+<tr>
+<td><strong>Amazon Q Developer</strong></td>
+<td>асістэнт распрацоўшчыка (код, AWS)</td>
+<td>«code generation»</td>
+</tr>
+<tr>
+<td><strong>Amazon A2I</strong></td>
+<td>human review прагнозаў</td>
+<td>«human-in-the-loop», «low confidence»</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="46-vs">4.6. Бізнес-метрыкі vs тэхнічныя</h3>
+<p>Пытанне пра <strong>бізнес-каштоўнасць</strong> → task completion rate, cost per interaction, customer satisfaction (CSAT), conversion rate, ROI, average revenue per user. Тэхнічныя (precision, recall, F1, latency) — не адказ на пытанне «ці дае гэта бізнесу больш каштоўнасці».</p>
+<hr />
+<h2 id="5-4-guidelines-for-responsible-ai-14">5. Домен 4 — Guidelines for Responsible AI (14%) — 🔴 частыя памылкі частыя памылкі</h2>
+<h3 id="51-responsible-ai-aws">5.1. Вымярэнні responsible AI (AWS)</h3>
+<p><strong>Fairness, Explainability, Privacy &amp; Security, Safety, Controllability, Veracity &amp; Robustness, Governance, Transparency.</strong></p>
+<h3 id="52-bias">5.2. Тыпы bias</h3>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bias</th>
+<th>Сутнасць</th>
+<th>Прыклад</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Sampling bias</strong></td>
+<td>навучальная выбарка не рэпрэзентуе папуляцыю</td>
+<td>групы пера/недапрадстаўлены → камера часцей «падазрае» адну этнічную групу</td>
+</tr>
+<tr>
+<td><strong>Historical bias</strong></td>
+<td>даныя адлюстроўваюць мінулую несправядлівасць</td>
+<td>мадэль найму на старых рашэннях</td>
+</tr>
+<tr>
+<td><strong>Measurement bias</strong></td>
+<td>памылкі ў вымярэнні/зборы прыкмет</td>
+<td>розныя прылады вымярэння</td>
+</tr>
+<tr>
+<td><strong>Observer bias</strong></td>
+<td>суб'ектыўнасць таго, хто назірае / размячае</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Confirmation bias</strong></td>
+<td>шукаем пацвярджэнне сваіх чаканняў</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Automation bias</strong></td>
+<td>людзі занадта давяраюць машыне</td>
+<td></td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Як змяншаць:</strong> рэпрэзентатыўныя даныя, <strong>data augmentation / сінтэтычныя даныя для недапрадстаўленых груп</strong>, балансаванне (Data Wrangler), выяўленне bias (Clarify), маніторынг (Model Monitor), human review, разнастайныя каманды.</p>
+<h3 id="53-explainability">5.3. Explainability</h3>
+<ul>
+<li><strong>SHAP (Shapley values)</strong> — <strong>лакальна</strong>: уклад кожнай прыкметы ў <strong>канкрэтны</strong> прагноз (можна агрэгаваць у глабальны).</li>
+<li><strong>PDP (Partial Dependence Plot)</strong> — <strong>глабальна</strong>: як прыкмета <strong>ў сярэднім</strong> уплывае на прагнозы.</li>
+<li>Інструмент AWS — <strong>SageMaker Clarify</strong>.</li>
+</ul>
+<h3 id="54-transparency">5.4. Transparency і дакументацыя</h3>
+<ul>
+<li><strong>AWS AI Service Cards</strong> — AWS апісвае прызначэнне, абмежаванні і рэкамендацыі сваіх AI-сэрвісаў.</li>
+<li><strong>SageMaker Model Cards</strong> — ты дакументуеш свае мадэлі.</li>
+<li>Празрыстасць ≠ раскрыццё ўсіх дэталяў абароны: пра guardrails і сістэмныя промпты распавядаюць <strong>на высокім узроўні</strong>.</li>
+</ul>
+<h3 id="55">5.5. Бяспечнасць кантэнту</h3>
+<p><strong>Guardrails for Amazon Bedrock</strong> — першы выбар для блакавання шкоднага/недарэчнага кантэнту. (У іх не было ў варыянтах — тады выбіраем інструкцыі ў промпце.)</p>
+<h3 id="56-sustainability">5.6. Sustainability</h3>
+<ul>
+<li><strong>AWS Trainium</strong> — найбольш энергаэфектыўнае <strong>навучанне</strong>.</li>
+<li><strong>AWS Inferentia</strong> — найбольш энергаэфектыўны <strong>inference</strong>.</li>
+<li>Таксама: выкарыстоўваць меншыя мадэлі, гатовыя FM замест навучання з нуля, serverless.</li>
+</ul>
+<h3 id="57-human-in-the-loop">5.7. Human-in-the-loop</h3>
+<p>Amazon A2I, ручная праверка рызыкоўных рашэнняў, зваротная сувязь карыстальнікаў.</p>
+<hr />
+<h2 id="6-5-security-compliance-governance-14">6. Домен 5 — Security, Compliance, Governance (14%) — 🔴 частыя памылкі</h2>
+<h3 id="61">6.1. Сэрвісы бяспекі і кампліенсу — не блытаць!</h3>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Сэрвіс</th>
+<th>Адказвае на пытанне</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>IAM</strong></td>
+<td>хто што можа рабіць (least privilege)</td>
+</tr>
+<tr>
+<td><strong>AWS CloudTrail</strong></td>
+<td><strong>ХТО, КАЛІ і які API</strong> выклікаў (аўдыт дзеянняў)</td>
+</tr>
+<tr>
+<td><strong>Bedrock model invocation logging</strong></td>
+<td><strong>ЗМЕСТ: прамты і адказы</strong> мадэлі</td>
+</tr>
+<tr>
+<td><strong>Amazon CloudWatch</strong></td>
+<td>метрыкі, логі, alarms, дашборды</td>
+</tr>
+<tr>
+<td><strong>AWS Config</strong></td>
+<td>гісторыя <strong>канфігурацый</strong> рэсурсаў + правілы адпаведнасці</td>
+</tr>
+<tr>
+<td><strong>AWS Trusted Advisor</strong></td>
+<td><strong>рэкамендацыі</strong>: cost, performance, security, fault tolerance, service limits</td>
+</tr>
+<tr>
+<td><strong>Amazon Macie</strong></td>
+<td><strong>адчувальныя даныя / PII у S3</strong></td>
+</tr>
+<tr>
+<td><strong>Amazon Inspector</strong></td>
+<td><strong>уразлівасці</strong> EC2, ECR, Lambda</td>
+</tr>
+<tr>
+<td><strong>Amazon GuardDuty</strong></td>
+<td>выяўленне <strong>пагроз</strong> і падазронай актыўнасці</td>
+</tr>
+<tr>
+<td><strong>AWS KMS</strong></td>
+<td>ключы шыфравання</td>
+</tr>
+<tr>
+<td><strong>AWS PrivateLink</strong></td>
+<td>прыватнае падключэнне да Bedrock/SageMaker з VPC без інтэрнэту</td>
+</tr>
+<tr>
+<td><strong>AWS Artifact</strong></td>
+<td><strong>спампаваць справаздачы AWS</strong> аб адпаведнасці (SOC, ISO, PCI)</td>
+</tr>
+<tr>
+<td><strong>AWS Audit Manager</strong></td>
+<td>бесперапынны <strong>збор доказаў</strong> для твайго аўдыту</td>
+</tr>
+<tr>
+<td><strong>AWS Shield / WAF</strong></td>
+<td>DDoS / вэб-атакі</td>
+</tr>
+<tr>
+<td><strong>Amazon DataZone / Lake Formation</strong></td>
+<td>data governance, каталог і доступ да даных</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="62-shared-responsibility-model">6.2. Shared responsibility model</h3>
+<ul>
+<li><strong>AWS</strong> — бяспека <strong>ОБЛАКА</strong>: дата-цэнтры, абсталяванне, інфраструктура кіраваных сэрвісаў (у т.л. FM у Bedrock).</li>
+<li><strong>Кліент</strong> — бяспека <strong>Ў ОБЛАКУ</strong>: IAM, даныя, шыфраванне, налады, што адпраўляе ў прамты.</li>
+</ul>
+<h3 id="63-generative-ai-security-scoping-matrix">6.3. Generative AI Security Scoping Matrix</h3>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Scope</th>
+<th>Сцэнар</th>
+<th>Адказнасць кліента</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Consumer app (публічны ChatGPT-падобны сэрвіс)</td>
+<td>мінімальная</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Enterprise app (SaaS з GenAI, напр. Amazon Q)</td>
+<td></td>
+</tr>
+<tr>
+<td>3</td>
+<td>Pre-trained models (выклік FM праз Bedrock API)</td>
+<td></td>
+</tr>
+<tr>
+<td>4</td>
+<td>Fine-tuned models (свая дадатковая трэніроўка)</td>
+<td></td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>Self-trained</strong> (мадэль з нуля)</td>
+<td><strong>максімальная</strong></td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="64-governance">6.4. Прыватнасць і governance даных</h3>
+<ul>
+<li><strong>Data lineage</strong> — паходжанне і трансфармацыі даных → <strong>кампліенс, аўдыт, празрыстасць</strong>.</li>
+<li><strong>De-identification</strong> — маскіраванне/токенізацыя ідэнтыфікатараў; <strong>сінтэтычныя даныя</strong>.</li>
+<li><strong>Data residency</strong>, retention, <strong>data minimization</strong> (збіраць толькі патрэбнае).</li>
+<li>Шыфраванне <strong>at rest</strong> (KMS) і <strong>in transit</strong> (TLS).</li>
+</ul>
+<hr />
+<h2 id="7">7. Шпаргалка «ключавое слова → адказ»</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Калі ў пытанні…</th>
+<th>…адказ звычайна</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>text to speech, audio</td>
+<td><strong>Polly</strong></td>
+</tr>
+<tr>
+<td>speech to text, transcribe calls</td>
+<td><strong>Transcribe</strong></td>
+</tr>
+<tr>
+<td>chatbot, conversational interface</td>
+<td><strong>Lex</strong> (або Bedrock для GenAI)</td>
+</tr>
+<tr>
+<td>extract text/forms/tables from documents</td>
+<td><strong>Textract</strong></td>
+</tr>
+<tr>
+<td>sentiment, entities, key phrases, redact PII in text</td>
+<td><strong>Comprehend</strong></td>
+</tr>
+<tr>
+<td>images/video, faces, objects, moderation</td>
+<td><strong>Rekognition</strong></td>
+</tr>
+<tr>
+<td>translate, multilingual</td>
+<td><strong>Translate</strong></td>
+</tr>
+<tr>
+<td>enterprise search</td>
+<td><strong>Kendra</strong></td>
+</tr>
+<tr>
+<td>recommendations</td>
+<td><strong>Personalize</strong></td>
+</tr>
+<tr>
+<td>employee assistant on company data</td>
+<td><strong>Amazon Q Business</strong></td>
+</tr>
+<tr>
+<td>PII in S3</td>
+<td><strong>Macie</strong></td>
+</tr>
+<tr>
+<td>vulnerabilities</td>
+<td><strong>Inspector</strong></td>
+</tr>
+<tr>
+<td>threats, malicious activity</td>
+<td><strong>GuardDuty</strong></td>
+</tr>
+<tr>
+<td>who called which API, when</td>
+<td><strong>CloudTrail</strong></td>
+</tr>
+<tr>
+<td>prompts and responses log</td>
+<td><strong>Bedrock model invocation logging</strong></td>
+</tr>
+<tr>
+<td>resource configuration history/compliance</td>
+<td><strong>Config</strong></td>
+</tr>
+<tr>
+<td>best-practice recommendations (cost, limits…)</td>
+<td><strong>Trusted Advisor</strong></td>
+</tr>
+<tr>
+<td>download SOC/ISO reports</td>
+<td><strong>Artifact</strong></td>
+</tr>
+<tr>
+<td>collect audit evidence</td>
+<td><strong>Audit Manager</strong></td>
+</tr>
+<tr>
+<td>block topics / harmful content / PII in GenAI</td>
+<td><strong>Guardrails for Amazon Bedrock</strong></td>
+</tr>
+<tr>
+<td>up-to-date company data, no retraining</td>
+<td><strong>RAG / Knowledge Bases</strong></td>
+</tr>
+<tr>
+<td>multi-step tasks, call APIs</td>
+<td><strong>Bedrock Agents</strong></td>
+</tr>
+<tr>
+<td>default vector store for KB</td>
+<td><strong>OpenSearch Serverless</strong></td>
+</tr>
+<tr>
+<td>bias detection, explainability, SHAP</td>
+<td><strong>SageMaker Clarify</strong></td>
+</tr>
+<tr>
+<td>drift in production</td>
+<td><strong>SageMaker Model Monitor</strong></td>
+</tr>
+<tr>
+<td>data labeling</td>
+<td><strong>SageMaker Ground Truth</strong></td>
+</tr>
+<tr>
+<td>no-code ML</td>
+<td><strong>SageMaker Canvas</strong></td>
+</tr>
+<tr>
+<td>data prep, balance dataset</td>
+<td><strong>SageMaker Data Wrangler</strong></td>
+</tr>
+<tr>
+<td>document model (intended use, risks)</td>
+<td><strong>SageMaker Model Cards</strong></td>
+</tr>
+<tr>
+<td>human review of predictions</td>
+<td><strong>Amazon A2I</strong></td>
+</tr>
+<tr>
+<td>intermittent traffic, cold start OK</td>
+<td><strong>Serverless inference</strong></td>
+</tr>
+<tr>
+<td>payload up to 1 GB, not immediate</td>
+<td><strong>Asynchronous inference</strong></td>
+</tr>
+<tr>
+<td>whole dataset offline, no endpoint</td>
+<td><strong>Batch transform</strong></td>
+</tr>
+<tr>
+<td>low latency, steady traffic</td>
+<td><strong>Real-time inference</strong></td>
+</tr>
+<tr>
+<td>energy-efficient training / inference</td>
+<td><strong>Trainium / Inferentia</strong></td>
+</tr>
+<tr>
+<td>low latency requirement for FM</td>
+<td><strong>smaller model size</strong></td>
+</tr>
+<tr>
+<td>number of candidate tokens</td>
+<td><strong>Top K</strong></td>
+</tr>
+<tr>
+<td>cumulative probability</td>
+<td><strong>Top P</strong></td>
+</tr>
+<tr>
+<td>randomness / creativity</td>
+<td><strong>Temperature</strong></td>
+</tr>
+<tr>
+<td>unlabeled domain data to customize FM</td>
+<td><strong>Continued pre-training</strong></td>
+</tr>
+<tr>
+<td>labeled prompt-completion pairs</td>
+<td><strong>Fine-tuning</strong></td>
+</tr>
+<tr>
+<td>overall % correct</td>
+<td><strong>Accuracy</strong></td>
+</tr>
+<tr>
+<td>don't miss positives</td>
+<td><strong>Recall</strong></td>
+</tr>
+<tr>
+<td>avoid false alarms</td>
+<td><strong>Precision</strong></td>
+</tr>
+<tr>
+<td>detailed classification errors</td>
+<td><strong>Confusion matrix</strong></td>
+</tr>
+<tr>
+<td>regression error</td>
+<td><strong>MAE / RMSE</strong></td>
+</tr>
+<tr>
+<td>summarization quality</td>
+<td><strong>ROUGE</strong></td>
+</tr>
+<tr>
+<td>translation quality</td>
+<td><strong>BLEU</strong></td>
+</tr>
+<tr>
+<td>fill in missing word</td>
+<td><strong>BERT</strong></td>
+</tr>
+<tr>
+<td>realistic synthetic data</td>
+<td><strong>GAN</strong></td>
+</tr>
+<tr>
+<td>learn from rewards/feedback</td>
+<td><strong>Reinforcement learning</strong></td>
+</tr>
+<tr>
+<td>adapt model to related task</td>
+<td><strong>Transfer learning</strong></td>
+</tr>
+<tr>
+<td>group without labels</td>
+<td><strong>Clustering (K-means)</strong></td>
+</tr>
+<tr>
+<td>most interpretable model</td>
+<td><strong>Linear/logistic regression, decision tree</strong></td>
+</tr>
+<tr>
+<td>summary stats &amp; visualizations before modeling</td>
+<td><strong>EDA</strong></td>
+</tr>
+<tr>
+<td>training data not representative</td>
+<td><strong>Sampling bias</strong></td>
+</tr>
+<tr>
+<td>maximum security ownership</td>
+<td><strong>Model trained from scratch (Scope 5)</strong></td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2 id="8">8. Апошнія парады перад экзаменам</h2>
+<ul>
+<li>65 пытанняў (50 ацэньваюцца + 15 эксперыментальных), 90 хвілін, прахадны бал 700/1000. Тыпы: адзін адказ, некалькі адказаў, ordering, matching, case study.</li>
+<li>Няма штрафу за няправільны адказ — <strong>адказвай на ўсё</strong>.</li>
+<li>Чытай <strong>апошні сказ</strong> пытання першым — там сапраўднае патрабаванне (MOST cost-effective, LEAST operational overhead, MOST interpretable).</li>
+<li>«Least operational effort / fully managed» → амаль заўсёды гатовы кіраваны сэрвіс (Comprehend, Rekognition, Bedrock), а не «пабудаваць самому на SageMaker / свой API».</li>
+<li>Калі два адказы падобныя — шукай розніцу ў адным слове (Top K/Top P, labeled/unlabeled, local/global).</li>
+</ul></main><script src="glossary.js"></script><script src="terms.js"></script><script>linkTerms(document.querySelector("main"))</script></body></html>
