@@ -155,6 +155,7 @@ h3.more{margin-top:34px;padding-top:16px;border-top:2px dashed var(--line)}
   <nav>
     <button data-tab="theory" class="on">📖 Тэорыя</button>
     <button data-tab="practice">Трэніроўка</button>
+    <button data-tab="mistakes" id="navMistakes">❌ Памылкі</button>
     <button data-tab="exam">Экзамен 65</button>
     <button data-tab="cards">Карткі</button>
     <button data-tab="gloss">Слоўнік</button>
@@ -211,6 +212,16 @@ h3.more{margin-top:34px;padding-top:16px;border-top:2px dashed var(--line)}
 </section>
 
 <!-- ====== EXAM SETUP ====== -->
+<section id="mistakesView" class="card hidden">
+  <h2>❌ Памылкі з практычных тэстаў</h2>
+  <p class="muted">Усе пытанні, дзе ў тэстах быў няправільны адказ. Калі пытанне трапілася ў некалькіх тэстах, яно тут адзін раз.</p>
+  <div class="row" style="margin:12px 0">
+    <button class="btn" id="startMistakes">▶ Перапрайсці ўсе</button>
+    <label class="chk"><input type="checkbox" id="mistOnlyOpen"> толькі яшчэ не выпраўленыя ў трэнажоры</label>
+    <span class="muted" id="mistInfo"></span>
+  </div>
+  <div id="mistList"></div>
+</section>
 <section id="examSetup" class="card hidden">
   <h2>Сімуляцыя экзамену</h2>
   <p>65 пытанняў, размеркаваных па вагах афіцыйных даменаў AIF-C01, 90 хвілін, без падказак да канца. Прахадны бал на трэнажоры — <b>70%</b> (на рэальным экзамене — 700/1000 па шкале).</p>
@@ -342,7 +353,7 @@ $('startExam').onclick=()=>{
 };
 function startSession(items, mode){
   session={items, idx:0, mode, finished:false, start:Date.now()};
-  ['theoryView','cardsView','glossView','practiceSetup','examSetup','resultView','statsView'].forEach(id=>$(id).classList.add('hidden'));
+  ['theoryView','cardsView','glossView','practiceSetup','examSetup','resultView','statsView','mistakesView'].forEach(id=>$(id).classList.add('hidden'));
   document.querySelector('main').classList.remove('wide');
   $('qView').classList.remove('hidden');
   $('timer').classList.toggle('hidden', mode!=='exam');
@@ -607,9 +618,25 @@ function renderGloss(){
   $('glossList').innerHTML=h||'<p class="muted">Нічога не знойдзена. Напішы, і я дадам тэрмін.</p>';
 }
 $('glossSearch').oninput=renderGloss;
+/* ===== памылкі з тэстаў ===== */
+const testWrong = () => Q.filter(q=>q.examWrong&&/^Practice Test/.test(q.src));
+const fixedInTrainer = q => stats[q.id] && !isWeak(q);
+function mistPool(){ const p=testWrong(); return $('mistOnlyOpen').checked ? p.filter(q=>!fixedInTrainer(q)) : p; }
+function renderMistakes(){
+  const all=testWrong(), open=all.filter(q=>!fixedInTrainer(q));
+  $('mistInfo').textContent=`Усяго ${all.length}, яшчэ не выпраўлена ў трэнажоры: ${open.length}`;
+  const bySrc={}; all.forEach(q=>(bySrc[q.src]=bySrc[q.src]||[]).push(q));
+  $('mistList').innerHTML=Object.keys(bySrc).sort().map(src=>`<h3>${src} — ${bySrc[src].length}</h3>`+bySrc[src].map(q=>{
+    const opts=q.options.map((o,i)=>{const c=q.correct.includes(i), m=q.mine.includes(i);
+      return (c||m)?`<div class="${c?'ok':'no'}">${c?'✅':'❌'} ${o.replace(/<\/?p>/g,'')}${m&&!c?' <span class="muted">(няправільны выбар)</span>':''}</div>`:''}).join('');
+    return `<details class="exp" style="margin:6px 0"><summary>${fixedInTrainer(q)?'✔️ ':''}${q.q.replace(/<[^>]+>/g,' ').slice(0,160)}…</summary><div>${q.q}${opts}<hr>${expl(q)}</div></details>`;}).join('')).join('');
+}
+$('mistOnlyOpen').onchange=renderMistakes;
+$('startMistakes').onclick=()=>{ const p=mistPool(); if(!p.length){alert('Усе памылкі ўжо выпраўлены 🎉');return;} startSession(shuffle(p).map(q=>makeItem(q,true)),'practice'); };
+if(!testWrong().length) $('navMistakes').remove();
 /* ===== навігацыя ===== */
 function showTab(t){
-  ['theoryView','practiceSetup','examSetup','qView','resultView','statsView','cardsView','glossView'].forEach(id=>$(id).classList.add('hidden'));
+  ['theoryView','practiceSetup','examSetup','qView','resultView','statsView','cardsView','glossView','mistakesView'].forEach(id=>$(id).classList.add('hidden'));
   document.querySelector('main').classList.toggle('wide', t==='theory');
   if(t==='theory'){ $('theoryView').classList.remove('hidden'); renderSide($('sideSearch').value); if(curTopic) openTopic(curTopic); }
   if(t==='practice'){ $('practiceSetup').classList.remove('hidden'); updatePool(); }
@@ -617,6 +644,7 @@ function showTab(t){
   if(t==='stats'){ renderStats(); $('statsView').classList.remove('hidden'); }
   if(t==='gloss'){ $('glossView').classList.remove('hidden'); renderGloss(); }
   if(t==='cards'){ $('cardsView').classList.remove('hidden'); if(!deck.length) newDeck(); else drawCard(); }
+  if(t==='mistakes'){ $('mistakesView').classList.remove('hidden'); renderMistakes(); }
 }
 curTopic = (location.hash.slice(1) && T.some(t=>t.id===location.hash.slice(1))) ? location.hash.slice(1) : T[0].id;
 showTab('theory');
