@@ -144,6 +144,7 @@ main.wide{max-width:1280px}
 .gi .gnm{font-weight:700}.gi .gal{color:var(--muted);font-size:13px}
 .gi .gd{margin-top:3px;font-size:15px}
 @media(max-width:1500px){#hdrInfo{display:none}}
+.be p{margin:6px 0}.be .ok>b{color:var(--ok)}.be .no>b{color:var(--bad)}details.orig{margin-top:10px;opacity:.85}details.orig summary{cursor:pointer;color:var(--muted);font-size:14px}
 </style>
 </head>
 <body>
@@ -258,6 +259,7 @@ main.wide{max-width:1280px}
 <script src="terms.js"></script>
 <script>
 const Q = window.QUESTIONS || [];
+const expl = q => q.explanation_be ? `<div class="be">${q.explanation_be}</div><details class="orig"><summary>Арыгінал (English)</summary>${q.explanation}</details>` : q.explanation;
 const DOMAINS = [
   ["Fundamentals of AI and ML", .20, "D1 Асновы AI/ML"],
   ["Fundamentals of Generative AI", .24, "D2 Асновы GenAI"],
@@ -381,7 +383,7 @@ function paint(){
       const ok=q.correct.includes(oi);
       el.classList.toggle('ok', ok);
       el.classList.toggle('bad', !ok && it.chosen.has(oi));
-      let tag=[]; if(ok) tag.push('✔ правільна'); if(q.mine.includes(oi)) tag.push('частая памылка');
+      let tag=[]; if(ok) tag.push('✔ правільна'); if(q.mine.includes(oi) && !ok) tag.push('частая памылка');
       if(tag.length) el.insertAdjacentHTML('beforeend',`<span class="tag muted">${tag.join(' · ')}</span>`);
     }
   });
@@ -402,7 +404,7 @@ function feedbackHTML(it){
   const q=it.q;
   return `<div class="verdict ${it.correct?'ok':'bad'}">${it.correct?'✔ Правільна!':'✘ Няправільна'}</div>
     ${q.note?`<div class="note"><b>Запомні:</b> ${q.note}</div>`:''}
-    <details class="exp" open><summary>Тлумачэнне</summary><div>${q.explanation}</div></details>`;
+    <details class="exp" open><summary>Тлумачэнне</summary><div>${expl(q)}</div></details>`;
 }
 $('checkBtn').onclick=()=>{
   const it=session.items[session.idx]; if(it.chosen.size!==it.q.correct.length) return;
@@ -443,7 +445,7 @@ function wrongList(items){
     <p><b>Твой адказ:</b> ${[...it.chosen].map(i=>q.options[i].replace(/<\/?p>/g,'')).join('; ')||'<i>без адказу</i>'}</p>
     <p style="color:var(--ok)"><b>Правільна:</b> ${q.correct.map(i=>q.options[i].replace(/<\/?p>/g,'')).join('; ')}</p>
     ${q.note?`<div class="note"><b>Запомні:</b> ${q.note}</div>`:''}
-    <details class="exp"><summary>Тлумачэнне</summary><div>${q.explanation}</div></details></div>`}).join('')}</div>`;
+    <details class="exp"><summary>Тлумачэнне</summary><div>${expl(q)}</div></details></div>`}).join('')}</div>`;
 }
 function finishExam(){
   if(!session) return;
