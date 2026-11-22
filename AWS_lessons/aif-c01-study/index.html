@@ -196,6 +196,7 @@ h3.more{margin-top:34px;padding-top:16px;border-top:2px dashed var(--line)}
     <select id="filter">
       <option value="all">Усе пытанні</option>
       <option value="examWrong">Толькі тыповыя памылкі</option>
+      <option value="testWrong">Памылкі з практычных тэстаў (без паўтораў)</option>
       <option value="weak">Мае слабыя (памылкі ў трэнажоры)</option>
       <option value="new">Яшчэ не адказаныя ў трэнажоры</option>
       <option value="smart">Разумны рэжым: спачатку слабыя і памылкі</option>
@@ -292,6 +293,7 @@ function pool(){
   let p=Q.filter(q=>srcs.includes(q.src)&&doms.includes(q.domain));
   const f=$('filter').value;
   if(f==='examWrong') p=p.filter(q=>q.examWrong);
+  if(f==='testWrong') p=p.filter(q=>q.examWrong&&/^Practice Test/.test(q.src));
   if(f==='weak') p=p.filter(isWeak);
   if(f==='new') p=p.filter(q=>!stats[q.id]);
   return p;
@@ -299,6 +301,7 @@ function pool(){
 function updatePool(){ $('poolInfo').textContent = `Будзе пытанняў: ${pool().length}`; }
 document.querySelectorAll('#practiceSetup input,#practiceSetup select').forEach(e=>e.addEventListener('change',updatePool));
 if(!Q.some(q=>q.examWrong)){ document.querySelector('#filter option[value=examWrong]').remove(); document.head.insertAdjacentHTML('beforeend','<style>.ew{display:none}</style>'); }
+if(!Q.some(q=>q.examWrong&&/^Practice Test/.test(q.src))) document.querySelector('#filter option[value=testWrong]').remove();
 updatePool();
 
 /* ---------- tabs ---------- */
