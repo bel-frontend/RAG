@@ -291,4 +291,37 @@ M['privacy'] += `
 <p>Каб мадэль <b>не вывучыла</b> PII, яго трэба <b>прыбраць з датасэта да навучання</b> (выдаліць, замаскіраваць, замяніць сінтэтычнымі данымі). KMS абараняе толькі доступ: пры навучанні даныя дэшыфруюцца. Guardrails дзейнічаюць ужо на адказах.</p>
 <p>Сертыфікат <b>ISO/IEC 42001</b> або SOC-справаздачу AWS спампоўваюць у <b>AWS Artifact</b>.</p>`;
 
+
+// --- Дадаткі пасля Practice Tests #2 і #3 ---
+M['rag'] += `
+<h4>Агенты: памяць, інтэграцыі і workflow</h4>
+<table><tr><th>Задача</th><th>Рашэнне</th></tr>
+<tr><td>Агент забывае дэталі ў размове і перавагі паміж размовамі</td><td><b>AgentCore Memory</b>: short-term (у сесіі) + long-term (паміж сесіямі)</td></tr>
+<tr><td>Падключыць да агента крыніцы кантэксту і знешнія сэрвісы праз шматразовыя інтэграцыі</td><td><b>Model Context Protocol (MCP)</b></td></tr>
+<tr><td>Крокі заўсёды ў адным парадку, патрабуецца прадказальнасць для аўдыту</td><td><b>Workflow</b> з фіксаваным парадкам (Bedrock Flows, Step Functions), а не аўтаномны агент</td></tr>
+<tr><td>Адзін endpoint, Bedrock сам выбірае мадэль для кожнага запыту</td><td><b>Intelligent Prompt Routing</b> (prompt router)</td></tr></table>`;
+
+M['ai-services'] += `
+<h4>Гатовыя AI-сэрвісы з агентамі</h4>
+<table><tr><th>Сэрвіс</th><th>Для чаго</th></tr>
+<tr><td><b>Amazon Quick</b> (Quick Suite)</td><td>гатовыя AI-агенты для супрацоўнікаў: даследаванні з цытатамі, аналіз дашбордаў, аўтаматызацыя задач <b>без распрацоўкі</b></td></tr>
+<tr><td><b>AWS Transform</b></td><td>AI-агенты для <b>мадэрнізацыі</b>: .NET Framework → .NET, мэйнфрэйм (COBOL), VMware; людзі правяраюць вынікі</td></tr>
+<tr><td><b>Amazon Q Developer</b></td><td>рэкамендацыі кода ў IDE распрацоўшчыка</td></tr>
+<tr><td><b>Bedrock AgentCore</b></td><td>для распрацоўшчыкаў, якія будуюць <b>сваіх</b> агентаў</td></tr></table>`;
+
+M['sec-services'] += `
+<h4>Яшчэ пары, якія блытаюць</h4>
+<table><tr><th>Пытанне</th><th>Адказ</th></tr>
+<tr><td>Ніводны акаўнт у AWS Organizations не можа рабіць X, нават калі лакальны адмін дасць правы</td><td><b>Service control policies (SCP)</b></td></tr>
+<tr><td>Абмежаваць карыстальнікаў у адным акаўнце пэўнымі мадэлямі</td><td><b>IAM-палітыкі</b></td></tr>
+<tr><td>Рэкамендацыі па рэсурсах, якія не выкарыстоўваюцца (endpoint-ы Comprehend, якія доўга не працуюць)</td><td><b>Trusted Advisor</b> (cost optimization)</td></tr>
+<tr><td>Падабраць памер EC2, Lambda, EBS</td><td><b>Compute Optimizer</b></td></tr>
+<tr><td>Апавяшчэнні пра новыя справаздачы ISV (SOC 2, ISO)</td><td><b>AWS Artifact</b> (Third-Party Reports)</td></tr></table>
+<p><b>Threat detection</b> — выяўляць актыўныя пагрозы ў рэальным часе (GuardDuty). <b>Vulnerability management</b> — шукаць, ацэньваць і закрываць слабыя месцы (Inspector).</p>`;
+
+M['privacy'] += `
+<h4>Як Bedrock абыходзіцца з данымі кліента</h4>
+<p>Промпты і даныя кліента <b>не выкарыстоўваюцца для паляпшэння базавых мадэляў</b> і <b>не перадаюцца правайдарам мадэляў</b>. Fine-tuning стварае прыватную копію мадэлі.</p>
+<p><b>Data retention</b> — колькі захоўваць даныя і калі выдаляць. <b>Data logging</b> — запіс доступу і змен з часам.</p>`;
+
 })(window.TOPIC_MORE = window.TOPIC_MORE || {});

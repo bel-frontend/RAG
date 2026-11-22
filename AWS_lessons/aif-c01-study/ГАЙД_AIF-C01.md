@@ -573,6 +573,48 @@ Amazon A2I, ручная праверка рызыкоўных рашэнняў,
 - ✅ **Дэтэрмінаваныя, імавернасныя або змешаныя**
 - 💡 Дрэва рашэнняў — дэтэрмінаванае, LLM з sampling — імавернасная.
 
+**71. Вобласці на фота без метак.**
+
+- ❌ Dimensionality reduction
+- ✅ **Clustering**
+- 💡 Выдзеліць групы або вобласці без метак → **кластарызацыя**. Dimensionality reduction памяншае колькасць прыкмет, але групы не стварае.
+
+**72. Групы гледачоў без загадзя вызначаных катэгорый.**
+
+- ❌ Linear regression
+- ✅ **K-means**
+- 💡 Групы без загадзя вызначаных катэгорый → **K-means** (unsupervised). Рэгрэсія, SVM і дрэвы рашэнняў — supervised.
+
+**76. Прыклады semi-supervised.**
+
+- ❌ Dimensionality reduction
+- ✅ **Fraud identification і sentiment analysis**
+- 💡 **Semi-supervised** = крыху метак + шмат неразмечаных даных. Тыповыя прыклады: **fraud identification**, **sentiment analysis**. Clustering і PCA — unsupervised.
+
+**82. Прыклад feature engineering.**
+
+- ❌ Hyperparameter tuning
+- ✅ **Вывесці новыя прыкметы (узрост будынка, адлегласць)**
+- 💡 **Feature engineering** — ствараць новыя прыкметы з наяўных даных. Hyperparameter tuning — гэта налада мадэлі, а графікі — EDA.
+
+**84. Іерархія AI.**
+
+- ❌ ML > DL > AI > GenAI
+- ✅ **AI ⊃ ML ⊃ DL ⊃ GenAI**
+- 💡 **AI ⊃ ML ⊃ Deep Learning ⊃ Generative AI**.
+
+**88. Дзе выкарыстоўваюць RL.**
+
+- ❌ Кластарызацыя
+- ✅ **Робататэхніка, гульні, аўтаматызацыя**
+- 💡 RL — **робататэхніка, гульні, аўтаматызацыя**: аптымальныя дзеянні праз спробы, памылкі і ўзнагароды.
+
+**96. Endpoint-ы Comprehend, якія не выкарыстоўваюцца.**
+
+- ❌ AWS Compute Optimizer
+- ✅ **AWS Trusted Advisor**
+- 💡 **Trusted Advisor** (cost optimization) мае праверку endpoint-аў Comprehend, якія не выкарыстоўваюцца. Compute Optimizer падбірае памер EC2, Lambda і EBS.
+
 ### D2 — Fundamentals of Generative AI
 
 **14. Адказ за лічаныя секунды.** Сітуацыя: мадэль павінна паспець адрэагаваць на збой абсталявання ў жорсткі ліміт часу; дадатковага навучання не будзе.
@@ -628,6 +670,30 @@ Amazon A2I, ручная праверка рызыкоўных рашэнняў,
 - ❌ data drift
 - ✅ **Nondeterminism**
 - 💡 Прычына — sampling (temperature, top-p). Стабільнасць — temperature = 0.
+
+**73. Тысячы апісанняў тавараў у адным стылі.**
+
+- ❌ GAN
+- ✅ **Transformer (LLM)**
+- 💡 Генерацыя тэксту → **transformer (LLM)**. GAN і diffusion — пераважна для выяў.
+
+**87. Мадэрнізацыя .NET і COBOL агентамі.**
+
+- ❌ AWS Glue
+- ✅ **AWS Transform**
+- 💡 **AWS Transform** — AI-агенты для мадэрнізацыі (.NET, мэйнфрэйм, VMware). Glue займаецца ETL даных.
+
+**90. FM і model customization.**
+
+- ❌ Пераблытаныя азначэнні
+- ✅ **FM — вялікая pretrained мадэль; customization — данавучанне**
+- 💡 **FM** — вялікая мадэль, навучаная загадзя. **Customization** — працэс данавучання базавай мадэлі (fine-tuning, continued pre-training).
+
+**93. Гатовыя AI-агенты для супрацоўнікаў.**
+
+- ❌ AgentCore Runtime
+- ✅ **Amazon Quick**
+- 💡 Гатовы сэрвіс для супрацоўнікаў → **Amazon Quick** (Quick Suite). AgentCore — для распрацоўшчыкаў, якія будуюць сваіх агентаў; Lex — для стварэння чат-ботаў.
 
 ### D3 — Applications of Foundation Models
 
@@ -733,6 +799,72 @@ Amazon A2I, ручная праверка рызыкоўных рашэнняў,
 - ✅ **Instructions, Context, Input data, Output indicator**
 - 💡 Hyperparameters і temperature — налады, а не частка тэксту промпта.
 
+**69. Рэзюмэ супраць эталона.**
+
+- ❌ F1 score
+- ✅ **ROUGE**
+- 💡 Рэзюмэ супраць эталоннага → **ROUGE**. Пераклад супраць эталоннага → **BLEU**. F1 — для класіфікацыі, perplexity і loss эталона не патрабуюць.
+
+**70. Пераклад супраць эталона.**
+
+- ❌ ROUGE
+- ✅ **BLEU**
+- 💡 Пераклад → **BLEU**, рэзюмэ → ROUGE. Лёгка запомніць: BLEU = Bilingual.
+
+**77. Калі падыходзіць RAG.**
+
+- ❌ Рэкамендацыі тавараў
+- ✅ **Чат-боты службы падтрымкі і медыцынскіх пытанняў па базе ведаў**
+- 💡 RAG — калі адказ трэба ўзяць з **базы ведаў**. Рэкамендацыі робіць Personalize; арыгінальны кантэнт і выявы пошуку не патрабуюць.
+
+**78. Тон брэнда ў чат-бота.**
+
+- ❌ Паменшыць temperature
+- ✅ **Ітэратыўна правіць промпт**
+- 💡 Тон і стыль задаюцца **інструкцыямі ў промпце** (prompt engineering, ітэратыўна). Temperature змяншае выпадковасць, але тону не задае.
+
+**81. Галюцынацыі ў ацэнцы Knowledge Bases.**
+
+- ❌ Refusal
+- ✅ **Faithfulness**
+- 💡 **Faithfulness** — ці адпавядае адказ знойдзеным крыніцам. Completeness — ці адказана на ўсе часткі пытання, Refusal — ці адмаўляецца мадэль адказваць.
+
+**83. Шматкрокавае разважанне.**
+
+- ❌ Few-shot
+- ✅ **Chain-of-thought**
+- 💡 Разважанне крок за крокам → **chain-of-thought**. Few-shot — даць прыклады, negative — сказаць, чаго не рабіць.
+
+**85. Выключыць аб'екты з выявы ў Nova Canvas.**
+
+- ❌ Style prompt
+- ✅ **Negative prompt**
+- 💡 Выключыць нешта з выявы → **negative prompt**. Inpainting — змяніць частку выявы, outpainting — дамаляваць за межамі.
+
+**86. Prompt Management + знешні API.**
+
+- ❌ Prompt variables
+- ✅ **Tools configuration**
+- 💡 Выклік знешняга API → **tools configuration** (tool use). Prompt variables — толькі плэйсхолдэры ў шаблоне.
+
+**91. Даныя кліента ў Bedrock.**
+
+- ❌ «Перадаюцца правайдарам для аптымізацыі»
+- ✅ **Не выкарыстоўваюцца для навучання і не перадаюцца правайдарам**
+- 💡 Bedrock: даныя кліента **не выкарыстоўваюцца** для паляпшэння базавых мадэляў і **не перадаюцца** правайдарам.
+
+**95. «Ты цяпер аналітык» і «уяві, што без правілаў».**
+
+- ❌ Poisoning і exposure
+- ✅ **Hijacking і jailbreaking**
+- 💡 Змяніць задачу мадэлі → **hijacking**. Абыйсці абмежаванні («no rules», role-play) → **jailbreaking**.
+
+**97. Калі SageMaker Async Inference.**
+
+- ❌ Нагрузка, якая дапушчае cold starts
+- ✅ **Вялікі payload да 1 ГБ і доўгая апрацоўка**
+- 💡 **Async** — вялікі payload (да 1 ГБ) і доўгая апрацоўка. Увесь датасэт → batch transform, cold starts → serverless.
+
 ### D4 — Guidelines for Responsible AI
 
 **37. Бяспечныя і рэлевантныя адказы.** Сітуацыя: трэба знізіць рызыку шкоднага кантэнту.
@@ -800,6 +932,36 @@ Amazon A2I, ручная праверка рызыкоўных рашэнняў,
 - ❌ Fairness
 - ✅ **Veracity and robustness**
 - 💡 Нестандартныя і падманлівыя ўваходы → robustness. Fairness — пра роўнае стаўленне да груп.
+
+**75. Responsible AI пры найме.**
+
+- ❌ Ацэньваць толькі агульную accuracy
+- ✅ **Правяраць вынікі па абароненых групах**
+- 💡 Правяраць вынікі па абароненых групах. Агульная accuracy хавае bias, гістарычныя даныя яго паўтараюць, а канчатковае рашэнне павінен прымаць чалавек.
+
+**79. Даследаваць bias пры 92% accuracy.**
+
+- ❌ Выдаліць калонку рэгіёна без тэстаў
+- ✅ **Subgroup analysis і аўдыт метак**
+- 💡 Даследаваць bias: **subgroup analysis** і **аўдыт метак**. Агульная accuracy хавае праблему ў групе; калі проста выдаліць калонку, застануцца proxy-прыкметы.
+
+**80. Бесстаронна і зразумела.**
+
+- ❌ Controllability
+- ✅ **Fairness і Explainability**
+- 💡 Бесстаронна для груп → **Fairness**. Зразумела людзям → **Explainability**. Controllability — пра кіраванне паводзінамі сістэмы.
+
+**89. Якія прыкметы ўплываюць на прагноз.**
+
+- ❌ Loss-крывыя
+- ✅ **Shapley values (SHAP)**
+- 💡 Уплыў прыкмет → **SHAP**. Loss-крывыя, confusion matrix і accuracy паказваюць якасць, а не тое, што ўплывае на прагнозы.
+
+**94. RLHF і human evaluation job.**
+
+- ❌ «RLHF без людзей»
+- ✅ **RLHF мяняе мадэль, evaluation толькі ацэньвае**
+- 💡 **RLHF** мяняе мадэль па перавагах людзей. **Human evaluation job** толькі ацэньвае мадэлі.
 
 ### D5 — Security, Compliance, and Governance
 
@@ -880,3 +1042,21 @@ Amazon A2I, ручная праверка рызыкоўных рашэнняў,
 - ❌ denied topic у Guardrails
 - ✅ **Policy ў Amazon Bedrock AgentCore**
 - 💡 Гарантыя = праверка па-за мадэллю на кожным выкліку інструмента. Промпт можна абысці, Guardrails фільтруюць тэкст.
+
+**74. Забараніць мадэлі ва ўсіх акаўнтах Organizations.**
+
+- ❌ AWS Trusted Advisor
+- ✅ **Service control policies (SCP)**
+- 💡 **SCP** у AWS Organizations задаюць верхнюю мяжу правоў для ўсіх акаўнтаў; лакальны адмін не можа яе абыйсці. CloudTrail толькі запісвае.
+
+**92. Threat detection і vulnerability management.**
+
+- ❌ Пераблытаныя азначэнні
+- ✅ **Актыўныя пагрозы зараз / слабыя месцы для выпраўлення**
+- 💡 **Threat detection** — актыўныя пагрозы зараз (GuardDuty). **Vulnerability management** — слабыя месцы, якія трэба закрыць (Inspector).
+
+**98. Блакаваць prompt attacks, але не свой system prompt.**
+
+- ❌ Word filter на «instructions»
+- ✅ **Prompt attack filter + input tags**
+- 💡 **Prompt attack filter** выяўляе jailbreak і injection; **input tags** пазначаюць, што правяраць трэба толькі ўвод карыстальніка, а не свой system prompt.

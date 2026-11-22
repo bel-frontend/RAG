@@ -1344,6 +1344,48 @@ Trade-off: <strong>больш складаная мадэль → звычайн
 <li>✅ <strong>Дэтэрмінаваныя, імавернасныя або змешаныя</strong></li>
 <li>💡 Дрэва рашэнняў — дэтэрмінаванае, LLM з sampling — імавернасная.</li>
 </ul>
+<p><strong>71. Вобласці на фота без метак.</strong></p>
+<ul>
+<li>❌ Dimensionality reduction</li>
+<li>✅ <strong>Clustering</strong></li>
+<li>💡 Выдзеліць групы або вобласці без метак → <strong>кластарызацыя</strong>. Dimensionality reduction памяншае колькасць прыкмет, але групы не стварае.</li>
+</ul>
+<p><strong>72. Групы гледачоў без загадзя вызначаных катэгорый.</strong></p>
+<ul>
+<li>❌ Linear regression</li>
+<li>✅ <strong>K-means</strong></li>
+<li>💡 Групы без загадзя вызначаных катэгорый → <strong>K-means</strong> (unsupervised). Рэгрэсія, SVM і дрэвы рашэнняў — supervised.</li>
+</ul>
+<p><strong>76. Прыклады semi-supervised.</strong></p>
+<ul>
+<li>❌ Dimensionality reduction</li>
+<li>✅ <strong>Fraud identification і sentiment analysis</strong></li>
+<li>💡 <strong>Semi-supervised</strong> = крыху метак + шмат неразмечаных даных. Тыповыя прыклады: <strong>fraud identification</strong>, <strong>sentiment analysis</strong>. Clustering і PCA — unsupervised.</li>
+</ul>
+<p><strong>82. Прыклад feature engineering.</strong></p>
+<ul>
+<li>❌ Hyperparameter tuning</li>
+<li>✅ <strong>Вывесці новыя прыкметы (узрост будынка, адлегласць)</strong></li>
+<li>💡 <strong>Feature engineering</strong> — ствараць новыя прыкметы з наяўных даных. Hyperparameter tuning — гэта налада мадэлі, а графікі — EDA.</li>
+</ul>
+<p><strong>84. Іерархія AI.</strong></p>
+<ul>
+<li>❌ ML &gt; DL &gt; AI &gt; GenAI</li>
+<li>✅ <strong>AI ⊃ ML ⊃ DL ⊃ GenAI</strong></li>
+<li>💡 <strong>AI ⊃ ML ⊃ Deep Learning ⊃ Generative AI</strong>.</li>
+</ul>
+<p><strong>88. Дзе выкарыстоўваюць RL.</strong></p>
+<ul>
+<li>❌ Кластарызацыя</li>
+<li>✅ <strong>Робататэхніка, гульні, аўтаматызацыя</strong></li>
+<li>💡 RL — <strong>робататэхніка, гульні, аўтаматызацыя</strong>: аптымальныя дзеянні праз спробы, памылкі і ўзнагароды.</li>
+</ul>
+<p><strong>96. Endpoint-ы Comprehend, якія не выкарыстоўваюцца.</strong></p>
+<ul>
+<li>❌ AWS Compute Optimizer</li>
+<li>✅ <strong>AWS Trusted Advisor</strong></li>
+<li>💡 <strong>Trusted Advisor</strong> (cost optimization) мае праверку endpoint-аў Comprehend, якія не выкарыстоўваюцца. Compute Optimizer падбірае памер EC2, Lambda і EBS.</li>
+</ul>
 <h3 id="d2-fundamentals-of-generative-ai">D2 — Fundamentals of Generative AI</h3>
 <p><strong>14. Адказ за лічаныя секунды.</strong> Сітуацыя: мадэль павінна паспець адрэагаваць на збой абсталявання ў жорсткі ліміт часу; дадатковага навучання не будзе.</p>
 <ul>
@@ -1398,6 +1440,30 @@ Trade-off: <strong>больш складаная мадэль → звычайн
 <li>❌ data drift</li>
 <li>✅ <strong>Nondeterminism</strong></li>
 <li>💡 Прычына — sampling (temperature, top-p). Стабільнасць — temperature = 0.</li>
+</ul>
+<p><strong>73. Тысячы апісанняў тавараў у адным стылі.</strong></p>
+<ul>
+<li>❌ GAN</li>
+<li>✅ <strong>Transformer (LLM)</strong></li>
+<li>💡 Генерацыя тэксту → <strong>transformer (LLM)</strong>. GAN і diffusion — пераважна для выяў.</li>
+</ul>
+<p><strong>87. Мадэрнізацыя .NET і COBOL агентамі.</strong></p>
+<ul>
+<li>❌ AWS Glue</li>
+<li>✅ <strong>AWS Transform</strong></li>
+<li>💡 <strong>AWS Transform</strong> — AI-агенты для мадэрнізацыі (.NET, мэйнфрэйм, VMware). Glue займаецца ETL даных.</li>
+</ul>
+<p><strong>90. FM і model customization.</strong></p>
+<ul>
+<li>❌ Пераблытаныя азначэнні</li>
+<li>✅ <strong>FM — вялікая pretrained мадэль; customization — данавучанне</strong></li>
+<li>💡 <strong>FM</strong> — вялікая мадэль, навучаная загадзя. <strong>Customization</strong> — працэс данавучання базавай мадэлі (fine-tuning, continued pre-training).</li>
+</ul>
+<p><strong>93. Гатовыя AI-агенты для супрацоўнікаў.</strong></p>
+<ul>
+<li>❌ AgentCore Runtime</li>
+<li>✅ <strong>Amazon Quick</strong></li>
+<li>💡 Гатовы сэрвіс для супрацоўнікаў → <strong>Amazon Quick</strong> (Quick Suite). AgentCore — для распрацоўшчыкаў, якія будуюць сваіх агентаў; Lex — для стварэння чат-ботаў.</li>
 </ul>
 <h3 id="d3-applications-of-foundation-models">D3 — Applications of Foundation Models</h3>
 <p><strong>22. Bedrock vs SageMaker JumpStart.</strong> Сітуацыя: чым адрозніваецца доступ да гатовых мадэляў.</p>
@@ -1502,6 +1568,72 @@ Trade-off: <strong>больш складаная мадэль → звычайн
 <li>✅ <strong>Instructions, Context, Input data, Output indicator</strong></li>
 <li>💡 Hyperparameters і temperature — налады, а не частка тэксту промпта.</li>
 </ul>
+<p><strong>69. Рэзюмэ супраць эталона.</strong></p>
+<ul>
+<li>❌ F1 score</li>
+<li>✅ <strong>ROUGE</strong></li>
+<li>💡 Рэзюмэ супраць эталоннага → <strong>ROUGE</strong>. Пераклад супраць эталоннага → <strong>BLEU</strong>. F1 — для класіфікацыі, perplexity і loss эталона не патрабуюць.</li>
+</ul>
+<p><strong>70. Пераклад супраць эталона.</strong></p>
+<ul>
+<li>❌ ROUGE</li>
+<li>✅ <strong>BLEU</strong></li>
+<li>💡 Пераклад → <strong>BLEU</strong>, рэзюмэ → ROUGE. Лёгка запомніць: BLEU = Bilingual.</li>
+</ul>
+<p><strong>77. Калі падыходзіць RAG.</strong></p>
+<ul>
+<li>❌ Рэкамендацыі тавараў</li>
+<li>✅ <strong>Чат-боты службы падтрымкі і медыцынскіх пытанняў па базе ведаў</strong></li>
+<li>💡 RAG — калі адказ трэба ўзяць з <strong>базы ведаў</strong>. Рэкамендацыі робіць Personalize; арыгінальны кантэнт і выявы пошуку не патрабуюць.</li>
+</ul>
+<p><strong>78. Тон брэнда ў чат-бота.</strong></p>
+<ul>
+<li>❌ Паменшыць temperature</li>
+<li>✅ <strong>Ітэратыўна правіць промпт</strong></li>
+<li>💡 Тон і стыль задаюцца <strong>інструкцыямі ў промпце</strong> (prompt engineering, ітэратыўна). Temperature змяншае выпадковасць, але тону не задае.</li>
+</ul>
+<p><strong>81. Галюцынацыі ў ацэнцы Knowledge Bases.</strong></p>
+<ul>
+<li>❌ Refusal</li>
+<li>✅ <strong>Faithfulness</strong></li>
+<li>💡 <strong>Faithfulness</strong> — ці адпавядае адказ знойдзеным крыніцам. Completeness — ці адказана на ўсе часткі пытання, Refusal — ці адмаўляецца мадэль адказваць.</li>
+</ul>
+<p><strong>83. Шматкрокавае разважанне.</strong></p>
+<ul>
+<li>❌ Few-shot</li>
+<li>✅ <strong>Chain-of-thought</strong></li>
+<li>💡 Разважанне крок за крокам → <strong>chain-of-thought</strong>. Few-shot — даць прыклады, negative — сказаць, чаго не рабіць.</li>
+</ul>
+<p><strong>85. Выключыць аб'екты з выявы ў Nova Canvas.</strong></p>
+<ul>
+<li>❌ Style prompt</li>
+<li>✅ <strong>Negative prompt</strong></li>
+<li>💡 Выключыць нешта з выявы → <strong>negative prompt</strong>. Inpainting — змяніць частку выявы, outpainting — дамаляваць за межамі.</li>
+</ul>
+<p><strong>86. Prompt Management + знешні API.</strong></p>
+<ul>
+<li>❌ Prompt variables</li>
+<li>✅ <strong>Tools configuration</strong></li>
+<li>💡 Выклік знешняга API → <strong>tools configuration</strong> (tool use). Prompt variables — толькі плэйсхолдэры ў шаблоне.</li>
+</ul>
+<p><strong>91. Даныя кліента ў Bedrock.</strong></p>
+<ul>
+<li>❌ «Перадаюцца правайдарам для аптымізацыі»</li>
+<li>✅ <strong>Не выкарыстоўваюцца для навучання і не перадаюцца правайдарам</strong></li>
+<li>💡 Bedrock: даныя кліента <strong>не выкарыстоўваюцца</strong> для паляпшэння базавых мадэляў і <strong>не перадаюцца</strong> правайдарам.</li>
+</ul>
+<p><strong>95. «Ты цяпер аналітык» і «уяві, што без правілаў».</strong></p>
+<ul>
+<li>❌ Poisoning і exposure</li>
+<li>✅ <strong>Hijacking і jailbreaking</strong></li>
+<li>💡 Змяніць задачу мадэлі → <strong>hijacking</strong>. Абыйсці абмежаванні («no rules», role-play) → <strong>jailbreaking</strong>.</li>
+</ul>
+<p><strong>97. Калі SageMaker Async Inference.</strong></p>
+<ul>
+<li>❌ Нагрузка, якая дапушчае cold starts</li>
+<li>✅ <strong>Вялікі payload да 1 ГБ і доўгая апрацоўка</strong></li>
+<li>💡 <strong>Async</strong> — вялікі payload (да 1 ГБ) і доўгая апрацоўка. Увесь датасэт → batch transform, cold starts → serverless.</li>
+</ul>
 <h3 id="d4-guidelines-for-responsible-ai">D4 — Guidelines for Responsible AI</h3>
 <p><strong>37. Бяспечныя і рэлевантныя адказы.</strong> Сітуацыя: трэба знізіць рызыку шкоднага кантэнту.</p>
 <ul>
@@ -1568,6 +1700,36 @@ Trade-off: <strong>больш складаная мадэль → звычайн
 <li>❌ Fairness</li>
 <li>✅ <strong>Veracity and robustness</strong></li>
 <li>💡 Нестандартныя і падманлівыя ўваходы → robustness. Fairness — пра роўнае стаўленне да груп.</li>
+</ul>
+<p><strong>75. Responsible AI пры найме.</strong></p>
+<ul>
+<li>❌ Ацэньваць толькі агульную accuracy</li>
+<li>✅ <strong>Правяраць вынікі па абароненых групах</strong></li>
+<li>💡 Правяраць вынікі па абароненых групах. Агульная accuracy хавае bias, гістарычныя даныя яго паўтараюць, а канчатковае рашэнне павінен прымаць чалавек.</li>
+</ul>
+<p><strong>79. Даследаваць bias пры 92% accuracy.</strong></p>
+<ul>
+<li>❌ Выдаліць калонку рэгіёна без тэстаў</li>
+<li>✅ <strong>Subgroup analysis і аўдыт метак</strong></li>
+<li>💡 Даследаваць bias: <strong>subgroup analysis</strong> і <strong>аўдыт метак</strong>. Агульная accuracy хавае праблему ў групе; калі проста выдаліць калонку, застануцца proxy-прыкметы.</li>
+</ul>
+<p><strong>80. Бесстаронна і зразумела.</strong></p>
+<ul>
+<li>❌ Controllability</li>
+<li>✅ <strong>Fairness і Explainability</strong></li>
+<li>💡 Бесстаронна для груп → <strong>Fairness</strong>. Зразумела людзям → <strong>Explainability</strong>. Controllability — пра кіраванне паводзінамі сістэмы.</li>
+</ul>
+<p><strong>89. Якія прыкметы ўплываюць на прагноз.</strong></p>
+<ul>
+<li>❌ Loss-крывыя</li>
+<li>✅ <strong>Shapley values (SHAP)</strong></li>
+<li>💡 Уплыў прыкмет → <strong>SHAP</strong>. Loss-крывыя, confusion matrix і accuracy паказваюць якасць, а не тое, што ўплывае на прагнозы.</li>
+</ul>
+<p><strong>94. RLHF і human evaluation job.</strong></p>
+<ul>
+<li>❌ «RLHF без людзей»</li>
+<li>✅ <strong>RLHF мяняе мадэль, evaluation толькі ацэньвае</strong></li>
+<li>💡 <strong>RLHF</strong> мяняе мадэль па перавагах людзей. <strong>Human evaluation job</strong> толькі ацэньвае мадэлі.</li>
 </ul>
 <h3 id="d5-security-compliance-and-governance">D5 — Security, Compliance, and Governance</h3>
 <p><strong>47. Знайсці адчувальныя даныя перад перадачай.</strong> Сітуацыя: трэба выявіць PII у файлах, каб іх выпадкова не раскрыць.</p>
@@ -1647,4 +1809,22 @@ Trade-off: <strong>больш складаная мадэль → звычайн
 <li>❌ denied topic у Guardrails</li>
 <li>✅ <strong>Policy ў Amazon Bedrock AgentCore</strong></li>
 <li>💡 Гарантыя = праверка па-за мадэллю на кожным выкліку інструмента. Промпт можна абысці, Guardrails фільтруюць тэкст.</li>
+</ul>
+<p><strong>74. Забараніць мадэлі ва ўсіх акаўнтах Organizations.</strong></p>
+<ul>
+<li>❌ AWS Trusted Advisor</li>
+<li>✅ <strong>Service control policies (SCP)</strong></li>
+<li>💡 <strong>SCP</strong> у AWS Organizations задаюць верхнюю мяжу правоў для ўсіх акаўнтаў; лакальны адмін не можа яе абыйсці. CloudTrail толькі запісвае.</li>
+</ul>
+<p><strong>92. Threat detection і vulnerability management.</strong></p>
+<ul>
+<li>❌ Пераблытаныя азначэнні</li>
+<li>✅ <strong>Актыўныя пагрозы зараз / слабыя месцы для выпраўлення</strong></li>
+<li>💡 <strong>Threat detection</strong> — актыўныя пагрозы зараз (GuardDuty). <strong>Vulnerability management</strong> — слабыя месцы, якія трэба закрыць (Inspector).</li>
+</ul>
+<p><strong>98. Блакаваць prompt attacks, але не свой system prompt.</strong></p>
+<ul>
+<li>❌ Word filter на «instructions»</li>
+<li>✅ <strong>Prompt attack filter + input tags</strong></li>
+<li>💡 <strong>Prompt attack filter</strong> выяўляе jailbreak і injection; <strong>input tags</strong> пазначаюць, што правяраць трэба толькі ўвод карыстальніка, а не свой system prompt.</li>
 </ul></main><script src="glossary.js"></script><script src="terms.js"></script><script>linkTerms(document.querySelector("main"))</script></body></html>
