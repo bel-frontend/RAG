@@ -1296,7 +1296,7 @@ Trade-off: <strong>больш складаная мадэль → звычайн
 <li>✅ <strong>Evaluation</strong> — параўнаць вынікі і выбраць мадэль; <strong>inference</strong> — прагнозы на новых даных</li>
 <li>💡 Evaluation = «наколькі добрая мадэль». Inference = «мадэль працуе на новых даных».</li>
 </ul>
-<p><strong>11. Як працуе reinforcement learning.</strong> Сітуацыя: чым RL адрозніваецца ад іншых метадаў.</p>
+<p><strong>11. Як працуе reinforcement learning.</strong> 🔁 Сітуацыя: чым RL адрозніваецца ад іншых метадаў.</p>
 <ul>
 <li>❌ «RL выкарыстоўвае supervised-алгарытмы для размеркі»</li>
 <li>✅ <strong>Агент ↔ асяроддзе</strong>: дзеянні, узнагароды і штрафы</li>
@@ -1313,6 +1313,36 @@ Trade-off: <strong>больш складаная мадэль → звычайн
 <li>❌ AWS Glue Data Quality</li>
 <li>✅ <strong>AWS Lambda</strong> са звычайным кодам</li>
 <li>💡 Не кожная задача патрабуе AI. Простая матэматыка → serverless-код. Glue Data Quality — якасць табліц.</li>
+</ul>
+<p><strong>56. Інтэрпрэтаваны класіфікатар рызыкі.</strong> Сітуацыя: банку патрэбна мадэль «высокая / нізкая рызыка», зразумелая рэгулятарам.</p>
+<ul>
+<li>❌ deep learning</li>
+<li>✅ <strong>Logistic regression</strong></li>
+<li>💡 Interpretable → лагістычная рэгрэсія або дрэва рашэнняў. Нейронныя сеткі і SVM з нелінейным ядром — black box, K-means не класіфікуе.</li>
+</ul>
+<p><strong>57. Архітэктура для класіфікацыі фота.</strong> Сітуацыя: аўтаматычна сартаваць фота тавараў па катэгорыях.</p>
+<ul>
+<li>❌ RNN</li>
+<li>✅ <strong>CNN</strong></li>
+<li>💡 Выявы → CNN. RNN — для паслядоўнасцей (тэкст, часавыя рады).</li>
+</ul>
+<p><strong>58. Прыклады unsupervised learning.</strong> Сітуацыя: выбраць два прыклады навучання без метак.</p>
+<ul>
+<li>❌ sentiment analysis, нейронная сетка</li>
+<li>✅ <strong>Clustering</strong> і <strong>dimensionality reduction</strong></li>
+<li>💡 Без метак: кластарызацыя, PCA, анамаліі, association rules. Sentiment — supervised.</li>
+</ul>
+<p><strong>59. Класіфікатар выяў з мінімумам працы.</strong> Сітуацыя: ёсць размечаныя фота, прыкметы ўручную рабіць не хочацца.</p>
+<ul>
+<li>❌ SVM з ручнымі прыкметамі</li>
+<li>✅ <strong>Fine-tune pretrained мадэлі</strong> (transfer learning)</li>
+<li>💡 Гатовая мадэль ужо ўмее бачыць прыкметы; дастаткова данавучыць. З нуля — доўга і дорага.</li>
+</ul>
+<p><strong>60. Дэтэрмінаваныя ці імавернасныя.</strong> Сітуацыя: якія выхады бываюць у ML-мадэляў.</p>
+<ul>
+<li>❌ «толькі імавернасныя»</li>
+<li>✅ <strong>Дэтэрмінаваныя, імавернасныя або змешаныя</strong></li>
+<li>💡 Дрэва рашэнняў — дэтэрмінаванае, LLM з sampling — імавернасная.</li>
 </ul>
 <h3 id="d2-fundamentals-of-generative-ai">D2 — Fundamentals of Generative AI</h3>
 <p><strong>14. Адказ за лічаныя секунды.</strong> Сітуацыя: мадэль павінна паспець адрэагаваць на збой абсталявання ў жорсткі ліміт часу; дадатковага навучання не будзе.</p>
@@ -1362,6 +1392,12 @@ Trade-off: <strong>больш складаная мадэль → звычайн
 <li>❌ tokens</li>
 <li>✅ <strong>Context window</strong></li>
 <li>💡 Токен — адзінка тэксту, context window — колькі токенаў мадэль бачыць за раз (уваход + выхад).</li>
+</ul>
+<p><strong>61. Розныя адказы на адзін промпт.</strong> Сітуацыя: той самы ўваход некалькі разоў дае розныя адказы.</p>
+<ul>
+<li>❌ data drift</li>
+<li>✅ <strong>Nondeterminism</strong></li>
+<li>💡 Прычына — sampling (temperature, top-p). Стабільнасць — temperature = 0.</li>
 </ul>
 <h3 id="d3-applications-of-foundation-models">D3 — Applications of Foundation Models</h3>
 <p><strong>22. Bedrock vs SageMaker JumpStart.</strong> Сітуацыя: чым адрозніваецца доступ да гатовых мадэляў.</p>
@@ -1418,7 +1454,7 @@ Trade-off: <strong>больш складаная мадэль → звычайн
 <li>✅ <strong>Amazon Rekognition</strong> (Custom Labels)</li>
 <li>💡 Rekognition — гатовыя мадэлі + Custom Labels. SageMaker — усё будаваць самому, даўжэй.</li>
 </ul>
-<p><strong>31. Для чаго Rekognition НЕ падыходзіць.</strong> Сітуацыя: выбраць сцэнар, які не пра выявы і відэа.</p>
+<p><strong>31. Для чаго Rekognition НЕ падыходзіць.</strong> 🔁 Сітуацыя: выбраць сцэнар, які не пра выявы і відэа.</p>
 <ul>
 <li>❌ бібліятэкі медыя з пошукам</li>
 <li>✅ <strong>Шматмоўны інтэрфейс</strong> (гэта Amazon Translate)</li>
@@ -1453,6 +1489,18 @@ Trade-off: <strong>больш складаная мадэль → звычайн
 <li>❌ статычны датасэт мінулых рашэнняў</li>
 <li>✅ <strong>RLHF з пастаяннай зваротнай сувяззю ад мадэратараў</strong></li>
 <li>💡 «Каштоўнасці людзей» + «пастаянна адаптавацца» → RLHF.</li>
+</ul>
+<p><strong>62. Inference на кастамізаванай мадэлі Bedrock.</strong> Сітуацыя: мадэль данавучылі ў Bedrock, трэба яе запускаць.</p>
+<ul>
+<li>❌ стварыць Knowledge Base</li>
+<li>✅ <strong>Provisioned Throughput</strong> (або on-demand, дзе падтрымліваецца)</li>
+<li>💡 Knowledge Base — гэта RAG, а не запуск мадэлі.</li>
+</ul>
+<p><strong>63. Элементы добрага промпта.</strong> Сітуацыя: якія складнікі павінен мець промпт.</p>
+<ul>
+<li>❌ Instructions, <strong>Hyperparameters</strong>, Input data, Output indicator</li>
+<li>✅ <strong>Instructions, Context, Input data, Output indicator</strong></li>
+<li>💡 Hyperparameters і temperature — налады, а не частка тэксту промпта.</li>
 </ul>
 <h3 id="d4-guidelines-for-responsible-ai">D4 — Guidelines for Responsible AI</h3>
 <p><strong>37. Бяспечныя і рэлевантныя адказы.</strong> Сітуацыя: трэба знізіць рызыку шкоднага кантэнту.</p>
@@ -1515,6 +1563,12 @@ Trade-off: <strong>больш складаная мадэль → звычайн
 <li>✅ <strong>Давер да прагнозаў</strong> і <strong>лягчэйшая адладка</strong></li>
 <li>💡 Празрыстасць дае давер і зручную адладку. Логіку мадэлі яна не хавае, а наадварот раскрывае.</li>
 </ul>
+<p><strong>64. Промпты з памылкамі і падманам.</strong> Сітуацыя: асістэнта тэстуюць друкарскімі памылкамі, дзіўнымі фармулёўкамі і наўмысна падманлівымі сцвярджэннямі.</p>
+<ul>
+<li>❌ Fairness</li>
+<li>✅ <strong>Veracity and robustness</strong></li>
+<li>💡 Нестандартныя і падманлівыя ўваходы → robustness. Fairness — пра роўнае стаўленне да груп.</li>
+</ul>
 <h3 id="d5-security-compliance-and-governance">D5 — Security, Compliance, and Governance</h3>
 <p><strong>47. Знайсці адчувальныя даныя перад перадачай.</strong> Сітуацыя: трэба выявіць PII у файлах, каб іх выпадкова не раскрыць.</p>
 <ul>
@@ -1540,7 +1594,7 @@ Trade-off: <strong>больш складаная мадэль → звычайн
 <li>✅ <strong>Model invocation logging</strong></li>
 <li>💡 Invocation logging = ЗМЕСТ (прамты і адказы). CloudTrail = ХТО і КАЛІ выклікаў API.</li>
 </ul>
-<p><strong>51. Рэкамендацыі па кошце, бяспецы і ліматах.</strong> Сітуацыя: патрэбныя парады па аптымізацыі AWS-асяроддзя.</p>
+<p><strong>51. Рэкамендацыі па кошце, бяспецы і ліматах.</strong> 🔁 Сітуацыя: патрэбныя парады па аптымізацыі AWS-асяроддзя.</p>
 <ul>
 <li>❌ AWS Config</li>
 <li>✅ <strong>AWS Trusted Advisor</strong></li>
@@ -1569,4 +1623,28 @@ Trade-off: <strong>больш складаная мадэль → звычайн
 <li>❌ Amazon Macie</li>
 <li>✅ <strong>Amazon Bedrock AgentCore Identity</strong></li>
 <li>💡 AgentCore Identity — OAuth-токены ад імя карыстальніка са сховішча токенаў (token vault).</li>
+</ul>
+<p><strong>65. Каб мадэль не вывучыла PII.</strong> Сітуацыя: fine-tuning LLM на даных кліентаў.</p>
+<ul>
+<li>❌ зашыфраваць даныя ў S3 ключом KMS</li>
+<li>✅ <strong>Прыбраць PII з датасэта</strong> да навучання</li>
+<li>💡 Пры навучанні даныя дэшыфруюцца, і мадэль усё роўна іх убачыць. Guardrails дзейнічаюць ужо на адказах.</li>
+</ul>
+<p><strong>66. Спампаваць сертыфікат AWS для аўдытараў.</strong> Сітуацыя: патрэбны ISO/IEC 42001 сертыфікат, які ахоплівае Bedrock.</p>
+<ul>
+<li>❌ AWS Trusted Advisor</li>
+<li>✅ <strong>AWS Artifact</strong></li>
+<li>💡 Compliance-справаздачы і сертыфікаты AWS → Artifact.</li>
+</ul>
+<p><strong>67. Дысцыпліна Scoping Matrix для пагроз.</strong> Сітуацыя: якая дысцыпліна выяўляе пагрозы і рэкамендуе меры.</p>
+<ul>
+<li>❌ Governance and compliance</li>
+<li>✅ <strong>Risk management</strong></li>
+<li>💡 Пяць дысцыплін: governance &amp; compliance, legal &amp; privacy, risk management, controls, resilience.</li>
+</ul>
+<p><strong>68. Гарантаваны ліміт для агента.</strong> Сітуацыя: агент праз AgentCore Gateway стварае замовы; трэба гарантыя, што ніколі не будзе замовы больш за $10 000, нават пры prompt injection.</p>
+<ul>
+<li>❌ denied topic у Guardrails</li>
+<li>✅ <strong>Policy ў Amazon Bedrock AgentCore</strong></li>
+<li>💡 Гарантыя = праверка па-за мадэллю на кожным выкліку інструмента. Промпт можна абысці, Guardrails фільтруюць тэкст.</li>
 </ul></main><script src="glossary.js"></script><script src="terms.js"></script><script>linkTerms(document.querySelector("main"))</script></body></html>

@@ -2,6 +2,12 @@
 window.GLOSSARY = [
 [["AgentCore","Amazon Bedrock AgentCore"],"AWS","<b>Amazon Bedrock AgentCore</b> — кіраваныя кампаненты для запуску AI-агентаў у прадакшне: Runtime, Identity, Gateway, Memory, Observability."],
 [["AgentCore Identity"],"Бяспека","<b>AgentCore Identity</b> — дазваляе агенту дзейнічаць ад імя карыстальніка: бярэ OAuth-токены са сховішча (token vault) са згоды карыстальніка, без жорстка прапісаных ключоў."],
+[["AgentCore Policy","Policy in Amazon Bedrock AgentCore"],"Бяспека","<b>AgentCore Policy</b> — дэтэрмінаваныя правілы для агента, якія Gateway правярае на кожным выкліку інструмента (напрыклад, «замова не больш за $10 000»). Працуе нават пры prompt injection, бо правярае не мадэль."],
+[["AgentCore Evaluations","online evaluation"],"Метрыкі","<b>AgentCore Evaluations</b> — ацэнка якасці агента; <b>online evaluation</b> бесперапынна ацэньвае выбарку рэальных прадакшн-сесій."],
+[["Nondeterminism","nondeterministic"],"GenAI","<b>Nondeterminism</b> — адзін і той жа ўваход дае розныя адказы (праз sampling, temperature). Стабільнасць: temperature = 0."],
+[["Data lifecycle management"],"Бяспека","<b>Data lifecycle management</b> — кіраванне жыццёвым цыклам даных: стварэнне, змены, тэрмін захоўвання і выдаленне."],
+[["Nova Lite"],"AWS","<b>Amazon Nova Lite</b> — танная мультымадальная мадэль (тэкст, выявы, відэа). <b>Nova Micro</b> — толькі тэкст, яшчэ таннейшая."],
+[["Veracity","robustness"],"Адказны AI","<b>Veracity & robustness</b> — праўдзівыя адказы і ўстойлівасць да памылак, дзіўных фармулёвак і падману ва ўваходзе."],
 [["OAuth"],"Бяспека","<b>OAuth</b> — стандарт, які дазваляе праграме атрымаць абмежаваны доступ да акаўнта карыстальніка (праз токен), не ведаючы яго пароля."],
 [["ISO/IEC 42001","ISO 42001","42001"],"Адказны AI","<b>ISO/IEC 42001</b> — міжнародны стандарт сістэмы кіравання AI. Сертыфікат азначае, што працэсы арганізацыі па кіраванні рызыкамі AI адпавядаюць стандарту (а не кожны прадукт ці мадэль)."],
 [["AWS Glue","Glue"],"AWS","<b>AWS Glue</b> — serverless ETL: збірае, ачышчае і пераўтварае даныя. <b>Glue Data Quality</b> правярае якасць таблічных даных."],

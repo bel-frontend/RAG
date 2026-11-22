@@ -239,4 +239,56 @@ M['privacy'] = H + `
 <h4>PII у тэксце і адказах</h4>
 <p>Знайсці PII у <b>S3</b> → <b>Macie</b>. Знайсці і замаскіраваць у <b>тэксце</b> → <b>Comprehend</b>. Не паказваць у <b>адказах мадэлі</b> → <b>Guardrails</b> sensitive information filters.</p>`;
 
+
+// --- Дадаткі пасля Practice Test #5 ---
+M['bedrock'] += `
+<h4>Сямейства Amazon Nova — што выбраць</h4>
+<table><tr><th>Мадэль</th><th>Што ўмее</th><th>Калі выбіраць</th></tr>
+<tr><td><b>Nova Micro</b></td><td>толькі <b>тэкст</b>, самая танная і хуткая</td><td>тэкставыя задачы з мінімальным коштам</td></tr>
+<tr><td><b>Nova Lite</b></td><td><b>тэкст + выявы + відэа</b> на ўваходзе, танная</td><td>«multimodal + cost-effective»</td></tr>
+<tr><td><b>Nova Pro</b></td><td>мультымадальная, мацнейшая; падтрымлівае fine-tuning</td><td>складаныя задачы разумення</td></tr>
+<tr><td><b>Nova Premier</b></td><td>самая магутная, самая дарагая</td><td>найскладанейшыя задачы, настаўнік для distillation</td></tr>
+<tr><td><b>Nova Canvas / Nova Reel</b></td><td>генерацыя <b>выяў</b> / <b>відэа</b></td><td>стварыць новы кантэнт</td></tr></table>
+<h4>Кастамізаваная мадэль: як запусціць</h4>
+<p>Пасля fine-tuning або continued pre-training у Bedrock атрымліваецца <b>прыватная копія</b> базавай мадэлі (базавая не мяняецца, даныя не ідуць правайдару). Запускаць inference на ёй — праз <b>Provisioned Throughput</b> або, для мадэляў, якія гэта падтрымліваюць, <b>on-demand</b>. У SageMaker яе не экспартуеш, Knowledge Base — гэта RAG, а не запуск мадэлі.</p>
+<div class="trap">⚠️ Меншая мадэль = таннейшая. Абавязацельствы (1 або 6 месяцаў) — у Provisioned Throughput, а не ў On-Demand.</div>`;
+
+M['rag'] += `
+<h4>AgentCore Policy і Evaluations</h4>
+<table><tr><th>Задача</th><th>Што выкарыстоўваць</th><th>Чаму не іншае</th></tr>
+<tr><td>«<b>Гарантаваць</b>, што агент ніколі не зробіць X (замова > $10 000), нават пры prompt injection»</td><td><b>Policy ў AgentCore</b> — дэтэрмінаваныя правілы, Gateway правярае <b>кожны выклік інструмента</b></td><td>Промпт можна абысці; Guardrails фільтруюць тэкст, а не параметры выкліку; Observability толькі назірае пасля факту</td></tr>
+<tr><td>Бесперапынна ацэньваць якасць адказаў агента ў прадакшне</td><td><b>AgentCore Evaluations</b> — online evaluation на выбарцы рэальных сесій</td><td>Разавая ацэнка не адсочвае змены</td></tr>
+<tr><td>Рызыкоўныя адказы павінен зацвердзіць чалавек</td><td><b>Human-in-the-loop</b> (напрыклад, Amazon A2I)</td><td>temperature = 0 не робіць адказ правільным</td></tr></table>`;
+
+M['rai'] += `
+<h4>Як пазнаць вымярэнне па тэсце</h4>
+<table><tr><th>Што робяць у пытанні</th><th>Вымярэнне</th></tr>
+<tr><td>Промпты з памылкамі, дзіўныя фармулёўкі, наўмысны падман</td><td><b>Veracity & robustness</b></td></tr>
+<tr><td>Параўноўваюць вынікі для розных груп людзей</td><td><b>Fairness</b></td></tr>
+<tr><td>Ці можна накіраваць і абмежаваць паводзіны сістэмы</td><td><b>Controllability</b></td></tr>
+<tr><td>Ці разумеюць людзі, чаму мадэль так вырашыла</td><td><b>Explainability</b></td></tr>
+<tr><td>Ці ведаюць карыстальнікі, што гэта AI і як ён працуе</td><td><b>Transparency</b></td></tr></table>
+<p>Яшчэ рызыка GenAI — <b>інтэлектуальная ўласнасць</b>: калі выява падобная на чужога персанажа, уладальнік можа прад'явіць прэтэнзіі (гэта не hallucination і не drift).</p>`;
+
+M['shared'] += `
+<h4>Пяць дысцыплін бяспекі ў Scoping Matrix</h4>
+<table><tr><th>Дысцыпліна</th><th>Пра што</th></tr>
+<tr><td><b>Governance & compliance</b></td><td>палітыкі, працэсы, адпаведнасць нарматывам</td></tr>
+<tr><td><b>Legal & privacy</b></td><td>прававыя патрабаванні, прыватнасць даных</td></tr>
+<tr><td><b>Risk management</b></td><td><b>выяўленне пагроз і рэкамендацыя мер</b> па іх зніжэнні</td></tr>
+<tr><td><b>Controls</b></td><td>канкрэтныя механізмы абароны (IAM, шыфраванне, guardrails)</td></tr>
+<tr><td><b>Resilience</b></td><td>даступнасць, аднаўленне пасля збояў</td></tr></table>`;
+
+M['privacy'] += `
+<h4>Кампаненты data governance</h4>
+<table><tr><th>Кампанент</th><th>Пра што</th></tr>
+<tr><td><b>Data lifecycle management</b></td><td>калі даныя створаны, зменены, колькі захоўваюцца і калі выдаляюцца</td></tr>
+<tr><td><b>Data residency</b></td><td>у якой краіне або рэгіёне фізічна захоўваюцца</td></tr>
+<tr><td><b>Data classification</b></td><td>узровень адчувальнасці (public, confidential, PII)</td></tr>
+<tr><td><b>Data lineage</b></td><td>адкуль даныя і як іх пераўтваралі</td></tr>
+<tr><td><b>Data observability</b></td><td>маніторынг якасці і стану даных</td></tr></table>
+<h4>Fine-tuning на асабістых даных</h4>
+<p>Каб мадэль <b>не вывучыла</b> PII, яго трэба <b>прыбраць з датасэта да навучання</b> (выдаліць, замаскіраваць, замяніць сінтэтычнымі данымі). KMS абараняе толькі доступ: пры навучанні даныя дэшыфруюцца. Guardrails дзейнічаюць ужо на адказах.</p>
+<p>Сертыфікат <b>ISO/IEC 42001</b> або SOC-справаздачу AWS спампоўваюць у <b>AWS Artifact</b>.</p>`;
+
 })(window.TOPIC_MORE = window.TOPIC_MORE || {});
