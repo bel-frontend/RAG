@@ -58,7 +58,7 @@ window.TOPICS = [
 </div></div>
 <div class="trap">⚠️ «Аўтаматычна ідэнтыфікаваць і класіфікаваць <b>кожную</b> жывёлу на выяве» → <b>object detection</b>.</div>`},
 
-{ id:'lifecycle', dom:'D1', title:'ML lifecycle: этапы праекта', match:/exploratory|\bEDA\b|data preparation|feature engineering|use case of the application|phase of|lifecycle|model evaluation|model inference|hyperparameter|data collection/i, html:`
+{ id:'lifecycle', dom:'D1', title:'ML lifecycle: этапы праекта', match:/validation set|test set|training set|exploratory|\bEDA\b|data preparation|feature engineering|use case of the application|phase of|lifecycle|model evaluation|model inference|hyperparameter|data collection/i, html:`
 <div class="dg">${flow(['1. Бізнес-задача','y'],'2. Збор даных',['3. EDA','y'],'4. Падрыхтоўка даных','5. Feature engineering','6. Навучанне + tuning',['7. Evaluation','g'],'8. Deployment / Inference',['9. Monitoring','r'])}<p class="cap">Пасля маніторынгу — перанавучанне (цыкл)</p></div>
 <table><tr><th>Этап</th><th>Што робяць</th></tr>
 <tr><td><b>Бізнес-задача</b></td><td>вузка і дакладна вызначыць <b>use case</b> і метрыку поспеху. Гэта <b>першае</b>, што трэба зрабіць</td></tr>
@@ -70,6 +70,17 @@ window.TOPICS = [
 <tr><td><b>Evaluation</b> (ацэнка)</td><td>праверыць якасць мадэлі <b>метрыкамі</b> (accuracy, F1, RMSE…) на <b>тэставых</b> даных, якіх яна не бачыла, і <b>параўнаць мадэлі</b>, каб выбраць лепшую</td></tr>
 <tr><td><b>Deployment / Inference</b></td><td><b>deployment</b> — выкласці мадэль як сэрвіс (endpoint); <b>inference</b> — выкарыстоўваць навучаную мадэль: падаць новыя даныя і атрымаць прагноз</td></tr>
 <tr><td><b>Monitoring</b></td><td>сачыць за дрэйфам даных і якасці (SageMaker Model Monitor)</td></tr></table>
+<h4>Train / validation / test — навошта тры наборы</h4>
+<div class="dg"><div class="bars">
+ <div style="width:70%;background:var(--acc)"><b>Training ~70%</b> — на ім мадэль вучыцца (падбірае weights)</div>
+ <div style="width:15%;background:#d9a400"><b>Validation ~15%</b></div>
+ <div style="width:15%;background:var(--ok)"><b>Test ~15%</b></div>
+</div></div>
+<table><tr><th>Набор</th><th>Для чаго</th><th>Абавязковы?</th></tr>
+<tr><td><b>Training set</b></td><td>навучанне мадэлі</td><td>так</td></tr>
+<tr><td><b>Validation set</b></td><td>падбор <b>гіперпараметраў</b> і выбар лепшай мадэлі падчас распрацоўкі</td><td><b>не</b> — можна замяніць <b>cross-validation</b></td></tr>
+<tr><td><b>Test set</b></td><td><b>адна канчатковая праверка</b>: як мадэль абагульняе на даных, якіх ніколі не бачыла</td><td>так (для сумленнай ацэнкі)</td></tr></table>
+<p>⚠️ Пастка: «test set выкарыстоўваюць для hyperparameter tuning» — <b>няправільна</b>. Калі падбіраць налады па test, ён перастае быць «новымі даннымі», і ацэнка становіцца завышанай.</p>
 <div class="cols">
  <div class="card2"><h4>Parameters</h4><p class="m">мадэль <b>вучыць сама</b>: weights, biases</p></div>
  <div class="card2"><h4>Hyperparameters</h4><p class="m">задаеш <b>ты да навучання</b>: learning rate, epochs, batch size, глыбіня дрэва, dropout</p></div>
@@ -249,7 +260,7 @@ window.TOPICS = [
 <tr><td><b>Provisioned Throughput</b></td><td>гарантаваная прапускная здольнасць для прадакшну; патрэбна для многіх кастамізаваных мадэляў</td></tr></table>
 <div class="tip">🔒 Bedrock <b>не выкарыстоўвае</b> прамты і даныя кліентаў для навучання базавых мадэляў і не перадае іх правайдарам мадэляў.</div>`},
 
-{ id:'rag', dom:'D3', title:'RAG, Knowledge Bases і Agents', match:/\bRAG\b|retrieval|knowledge base|Bedrock agent|Agents for|vector (database|store)|OpenSearch|up-to-date/i, html:`
+{ id:'rag', dom:'D3', title:'RAG, Knowledge Bases і Agents', match:/AgentCore|AI agent|agent (configured|with tools)|\bRAG\b|retrieval|knowledge base|Bedrock agent|Agents for|vector (database|store)|OpenSearch|up-to-date/i, html:`
 <h4>Падрыхтоўка (адзін раз)</h4>
 <div class="dg">${flow('📄 Дакументы (S3, Confluence…)','✂️ Chunking',['🔢 Embedding-мадэль','y'],['🗄 Vector store<br><small>па змаўчанні: OpenSearch Serverless</small>','b'])}</div>
 <h4>Запыт карыстальніка</h4>
@@ -257,7 +268,21 @@ window.TOPICS = [
 <table><tr><th>Калі RAG</th><th>Калі fine-tuning</th></tr>
 <tr><td>даныя <b>часта мяняюцца</b>, патрэбныя <b>свае / актуальныя</b> веды, без перанавучання, патрэбныя спасылкі на крыніцы, менш hallucinations</td><td>трэба змяніць <b>паводзіны / стыль / фармат</b>, вузкая задача, ёсць размечаныя даныя</td></tr></table>
 <h4>Agents for Amazon Bedrock</h4>
-<div class="dg">${flow('«Вярні мой заказ #123»',['🧠 Агент плануе крокі','y'],['🔧 Action group: API «знайсці заказ» (Lambda)','b'],['🔧 API «стварыць вяртанне»','b'],['📚 Knowledge base: палітыка вяртанняў','b'],['✅ Адказ','g'])}<p class="cap">Агент выконвае <b>шматкрокавыя задачы</b> і выклікае API</p></div>`},
+<div class="dg">${flow('«Вярні мой заказ #123»',['🧠 Агент плануе крокі','y'],['🔧 Action group: API «знайсці заказ» (Lambda)','b'],['🔧 API «стварыць вяртанне»','b'],['📚 Knowledge base: палітыка вяртанняў','b'],['✅ Адказ','g'])}<p class="cap">Агент выконвае <b>шматкрокавыя задачы</b> і выклікае API</p></div>
+<h4>Калі патрэбны агент, а калі не</h4>
+<table><tr><th>Задача</th><th>Што выбраць</th></tr>
+<tr><td>Некалькі крокаў <b>з дзеяннямі</b>: пашукаць → апрацаваць → запісаць файл у S3 / выклікаць API</td><td><b>AI-агент з інструментамі (tools)</b></td></tr>
+<tr><td>Адказаць на пытанне па сваіх дакументах</td><td><b>RAG / Knowledge Base</b></td></tr>
+<tr><td>Простае дэтэрмінаванае пераўтварэнне (павярнуць выяву, пералічыць лічбы)</td><td>звычайны код, напрыклад <b>AWS Lambda</b> — AI не патрэбны</td></tr></table>
+<h4>Amazon Bedrock AgentCore</h4>
+<p><b>AgentCore</b> — набор кіраваных кампанентаў, каб запускаць агентаў у прадакшне з любым фрэймворкам і мадэллю:</p>
+<table><tr><th>Кампанент</th><th>Што робіць</th></tr>
+<tr><td><b>Runtime</b></td><td>serverless-асяроддзе, дзе працуе агент (ізаляваныя сесіі)</td></tr>
+<tr><td><b>Identity</b></td><td>агент дзейнічае <b>ад імя карыстальніка</b>: атрымлівае <b>OAuth</b>-токены са сховішча (token vault) са згоды карыстальніка — <b>без жорстка прапісаных ключоў</b></td></tr>
+<tr><td><b>Gateway</b></td><td>ператварае API і Lambda-функцыі ў інструменты для агента (MCP)</td></tr>
+<tr><td><b>Memory</b></td><td>кароткатэрміновая і доўгатэрміновая памяць агента</td></tr>
+<tr><td><b>Observability</b></td><td>трасіроўка і маніторынг крокаў агента</td></tr></table>
+<p>Ключ на экзамене: «агент павінен дзейнічаць ад імя карыстальніка ў SaaS (Google Workspace, Salesforce), без hardcoded credentials» → <b>AgentCore Identity</b>.</p>`},
 
 { id:'customize', dom:'D3', title:'Як адаптаваць і выбраць FM', match:/customiz|transfer learning|model size|latency|related task/i, html:`
 <div class="dg"><div class="stairs">
@@ -381,7 +406,7 @@ window.TOPICS = [
  <div><b>5</b>Self-trained<small>мадэль з нуля</small></div>
 </div><div class="axis"><span>⬅ менш адказнасці кліента</span><span>максімум адказнасці ➡</span></div></div>`},
 
-{ id:'privacy', dom:'D5', title:'Прыватнасць даных, PII, lineage', match:/PII|privacy|lineage|de-identif|mask|synthetic|anonymi|residency|encrypt|compliance|sensitive|confidential/i, html:`
+{ id:'privacy', dom:'D5', title:'Прыватнасць даных, PII, lineage', match:/42001|ISO\/IEC|PII|privacy|lineage|de-identif|mask|synthetic|anonymi|residency|encrypt|compliance|sensitive|confidential/i, html:`
 <table><tr><th>Практыка</th><th>Сутнасць</th></tr>
 <tr><td><b>Data lineage</b></td><td>адкуль даныя і як іх трансфармавалі → <b>кампліенс, аўдыт, празрыстасць</b></td></tr>
 <tr><td><b>De-identification</b></td><td>маскіраванне / токенізацыя імёнаў, ID</td></tr>
@@ -389,6 +414,13 @@ window.TOPICS = [
 <tr><td><b>Data minimization</b></td><td>збіраць толькі патрэбнае</td></tr>
 <tr><td><b>Шыфраванне</b></td><td>at rest (KMS) і in transit (TLS)</td></tr>
 <tr><td><b>Data residency / retention</b></td><td>дзе і як доўга захоўваюцца даныя</td></tr></table>
+<h4>Стандарты кіравання AI</h4>
+<table><tr><th>Стандарт</th><th>Што азначае</th></tr>
+<tr><td><b>ISO/IEC 42001</b></td><td>стандарт <b>сістэмы кіравання AI</b> (AI management system). Сертыфікат = <b>працэсы арганізацыі</b> па кіраванні рызыкамі AI адпавядаюць стандарту. <b>Не</b> сертыфікуе асобныя прадукты, мадэлі, прагнозы ці людзей</td></tr>
+<tr><td><b>ISO/IEC 27001</b></td><td>сістэма кіравання інфармацыйнай бяспекай</td></tr>
+<tr><td><b>NIST AI RMF</b></td><td>фрэймворк кіравання рызыкамі AI (ЗША)</td></tr>
+<tr><td><b>EU AI Act</b></td><td>закон ЕС: класіфікуе AI-сістэмы па ўзроўні рызыкі</td></tr></table>
+<p>Справаздачы аб адпаведнасці самой AWS (ISO, SOC) спампоўваюць у <b>AWS Artifact</b>.</p>
 <div class="dg">${flow('Сырыя даныя з PII',['Macie: знайсці PII у S3','b'],['Comprehend / Guardrails: маскіраваць у тэксце','b'],['De-identify / сінтэтыка','y'],['Навучанне / RAG','g'])}</div>`},
 ];
 
