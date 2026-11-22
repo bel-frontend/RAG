@@ -145,6 +145,7 @@ main.wide{max-width:1280px}
 .gi .gd{margin-top:3px;font-size:15px}
 @media(max-width:1500px){#hdrInfo{display:none}}
 .be p{margin:6px 0}.be .ok>b{color:var(--ok)}.be .no>b{color:var(--bad)}details.orig{margin-top:10px;opacity:.85}details.orig summary{cursor:pointer;color:var(--muted);font-size:14px}
+h3.more{margin-top:34px;padding-top:16px;border-top:2px dashed var(--line)}
 </style>
 </head>
 <body>
@@ -255,6 +256,8 @@ main.wide{max-width:1280px}
 <script src="data.js"></script>
 <script src="data_udemy.js"></script><!-- неабавязковы лакальны файл, не ў git -->
 <script src="theory.js"></script>
+<script src="theory_more1.js"></script>
+<script src="theory_more2.js"></script>
 <script src="glossary.js"></script>
 <script src="terms.js"></script>
 <script>
@@ -497,6 +500,7 @@ $('hdrInfo').textContent = `${Q.length} пытанняў`;
 
 /* ===== Тэорыя ===== */
 const T = window.TOPICS || [];
+T.forEach(t=>{ const m=(window.TOPIC_MORE||{})[t.id]; if(m) t.html+=m; });
 const DOMCODE = {D1:DOMAINS[0], D2:DOMAINS[1], D3:DOMAINS[2], D4:DOMAINS[3], D5:DOMAINS[4]};
 const strip = h => h.replace(/<[^>]+>/g,' ').replace(/&[a-z#0-9]+;/gi,' ');
 T.forEach(t=>{
