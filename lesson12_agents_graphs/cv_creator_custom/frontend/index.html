@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="be">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Навучальны CV-рэдактар на LangGraph" />
+    <title>CV Lab — LangGraph editor</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="CV Lab — на галоўную">
+        <span class="brand-mark">CV</span>
+        <span>Lab</span>
+      </a>
+      <p>Lesson 12 · Human-in-the-loop</p>
+      <button id="reset-button" class="button button-ghost" type="button">Новы CV</button>
+    </header>
+
+    <main class="workspace">
+      <section class="control-panel" aria-labelledby="source-title">
+        <div class="section-heading">
+          <span class="step">01</span>
+          <div>
+            <p class="eyebrow">Зыходныя даныя</p>
+            <h1 id="source-title">Ствары CV пад вакансію</h1>
+          </div>
+        </div>
+
+        <form id="source-form" class="source-form">
+          <label>
+            <span>Інфармацыя пра кандыдата</span>
+            <textarea
+              id="candidate-text"
+              rows="12"
+              required
+              placeholder="Устаўце бягучы CV, досвед, адукацыю і навыкі…"
+            ></textarea>
+          </label>
+
+          <label>
+            <span>Тэкст вакансіі</span>
+            <textarea
+              id="vacancy-text"
+              rows="10"
+              required
+              placeholder="Устаўце апісанне мэтавай вакансіі…"
+            ></textarea>
+          </label>
+
+          <button id="create-button" class="button button-primary" type="submit">
+            <span>Стварыць CV</span>
+            <span aria-hidden="true">→</span>
+          </button>
+        </form>
+
+        <section class="chat-card" aria-labelledby="chat-title">
+          <header class="chat-header">
+            <div>
+              <div class="question-label"><span class="pulse"></span> CV agent</div>
+              <h2 id="chat-title">Чат з агентам</h2>
+            </div>
+            <span id="chat-status" class="chat-status">чакае даных</span>
+          </header>
+
+          <div id="chat-messages" class="chat-messages" aria-live="polite">
+            <div class="chat-message assistant">
+              Запоўніце даныя вышэй. Калі мне не хопіць інфармацыі для CV, я задам пытанне тут.
+            </div>
+          </div>
+
+          <form id="question-form" class="chat-composer">
+            <p id="question-text" class="sr-only">Агент пакуль не задаў пытанне</p>
+            <label>
+              <span class="sr-only">Ваш адказ</span>
+              <textarea
+                id="answer-text"
+                rows="3"
+                placeholder="Чакайце пытання агента…"
+                disabled
+                required
+              ></textarea>
+            </label>
+            <button class="button button-dark" type="submit" disabled>
+              Адказаць і працягнуць
+            </button>
+          </form>
+        </section>
+
+        <div id="error-message" class="error" role="alert" hidden></div>
+      </section>
+
+      <section class="preview-panel" aria-labelledby="preview-title">
+        <div class="preview-toolbar">
+          <div>
+            <p class="eyebrow">Вынік</p>
+            <h2 id="preview-title">CV preview</h2>
+          </div>
+          <div class="toolbar-actions">
+            <button id="download-button" class="icon-button" type="button" disabled>
+              Спампаваць JSON
+            </button>
+            <button id="print-button" class="icon-button" type="button" disabled>Друк</button>
+          </div>
+        </div>
+
+        <div id="empty-preview" class="empty-preview">
+          <span class="empty-number">12</span>
+          <div>
+            <h2>Тут з’явіцца ваш CV</h2>
+            <p>Агент вылучыць важнае, задасць удакладняльныя пытанні і адаптуе вынік пад вакансію.</p>
+          </div>
+        </div>
+
+        <div id="loading-preview" class="loading-preview" hidden>
+          <div class="loader"></div>
+          <p>Агент аналізуе даныя і будуе структуру CV…</p>
+        </div>
+
+        <article id="cv-preview" class="cv-document" hidden></article>
+      </section>
+    </main>
+  </body>
+</html>
